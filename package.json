@@ -1,0 +1,27 @@
+{
+  "name": "nextsteps-server",
+  "version": "0.0.0",
+  "description": "The server side syncing capabilities for the NextSteps mobile app.",
+  "main": "module.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/appdevdesigns/nextsteps-server.git"
+  },
+  "author": "Johnny Hausman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/appdevdesigns/nextsteps-server/issues"
+  },
+  "homepage": "https://github.com/appdevdesigns/nextsteps-server",
+  "dependencies": {
+    "ad-utils": "git://github.com/appdevdesigns/ad-utils",
+    "gma-api": "git://github.com/appdevdesigns/gma-api",
+    "async": "^0.6.2"
+  }
+}
