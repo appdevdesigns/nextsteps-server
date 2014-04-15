@@ -27,7 +27,7 @@ module.exports = function(req, res, next) {
             next(err);
         })
         .then(function(){
-AD.log('  develop tools() next()');
+//AD.log('  develop tools() next()');
             next();
         });
 

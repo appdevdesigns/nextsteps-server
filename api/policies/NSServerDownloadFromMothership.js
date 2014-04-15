@@ -30,15 +30,11 @@ module.exports = function(req, res, next) {
 
         externalSystems[sails.config.nsserver.externalSystem](req,res)
         .fail(function(err){
-            console.log('---> sending Error:');
-            console.log(err);
+            AD.log('---> sending Error:');
+            AD.log.error(err);
             ADCore.comm.error(res, err);
         })
         .then(function( data ){
-//console.log();
-//console.log('data from external Systems:');
-//console.log(data.assignments);
-//console.log();
 
             // External data retrieved; now make sure we're in sync
             syncAssignments({
@@ -51,11 +47,6 @@ module.exports = function(req, res, next) {
             })
             .then(function(){
 
-//AD.log('syncAssignments().then():');
-//console.log();
-//console.log('before syncMeasurements:');
-//console.log(data.measurements);
-//console.log();
                 syncMeasurements({
                     req:req,
                     measurements:data.measurements
@@ -64,7 +55,6 @@ module.exports = function(req, res, next) {
                     ADCore.comm.error(res, err);
                 })
                 .then(function(){
-//AD.log('syncMeasurements().then():');
                     next();
                 });
             });
@@ -74,7 +64,7 @@ module.exports = function(req, res, next) {
     } else {
 
         var err = new Error('*** Error: unknown configured system ['+sails.config.nsserver.externalSystem+']');
-        console.log(err);
+        AD.log.error(err);
         next(err);
     }
 
@@ -140,39 +130,14 @@ var createCampus = function(opts) {
         node_id: gmaId,
         language_code: ADCore.user.current(req).getLanguageCode(),
         campus_label: name
-    }
+    };
 
     var userUUID = null;
     if ('undefined' != typeof req.appdev.userUUID) {
         userUUID = req.appdev.userUUID;
     } else {
-AD.log.error('*** Shoot! req.appdev.userUUID not defined yet.  How?!');
+        AD.log.error('*** Shoot! req.appdev.userUUID not defined yet.  How?!');
     }
-
-
-//    NSServerCampus.create({
-//        campus_uuid: uuid,
-//        node_id: gmaId
-//    })
-//    .fail(function(err){
-//        dfd.reject(err);
-//    })
-//    .then(function(campus){
-//        campus.addTranslation({
-//            campus_id: campus.id,
-//            language_code: ADCore.user.current(req).getLanguageCode(),
-//            campus_label: name
-//        })
-//        .fail(function(err){
-//            dfd.reject(err);
-//        })
-//        .then(function(){
-//            dfd.resolve();
-//        });
-//    });
-//
-//    return dfd;
-
 
     return DBHelper.applyMultilingualTransaction({
         userUUID:userUUID,
@@ -544,8 +509,8 @@ var createStep = function(opts) {
     } else {
 AD.log.error('*** Shoot! req.appdev.userUUID not defined yet.  How?!');
     }
-    
-    
+
+
     return DBHelper.applyMultilingualTransaction({
         userUUID:userUUID,
         operation:'create',
@@ -554,7 +519,7 @@ AD.log.error('*** Shoot! req.appdev.userUUID not defined yet.  How?!');
         assocTable:NSServerUserSteps,
         log:log
     });
-//    
+//
 //    NSServerSteps.create({
 //        step_uuid: AD.util.uuid(),
 //        campus_uuid: campusUUID,

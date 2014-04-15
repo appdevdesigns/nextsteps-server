@@ -224,7 +224,7 @@ module.exports = {
 
             // step 1: build the base xEntry object
             function(next) {
-//                AD.log('  - addTransaction.step 1');
+//AD.log('  - addTransaction.step 1');
                 xEntry.operation = operation;
                 xEntry.model = model;
                 if (operation == 'destroy') {
@@ -238,6 +238,7 @@ module.exports = {
                         }
                     }
                 }
+//AD.log('    - xEntry:', xEntry);
 
                 next();
             },
@@ -245,7 +246,7 @@ module.exports = {
 
             // step 2: add in the multilingual data as well
             function(next) {
-//                AD.log('  - addTransaction.step 2');
+//AD.log('  - addTransaction.step 2');
 
                 if (operation != 'destroy') {
 
@@ -258,8 +259,10 @@ module.exports = {
                             next(err);
                         })
                         .then(function(trans){
-//AD.log('obj.trans().then():');
+//AD.log('DBHelper.getTranslation().then():');
                             var mlParams = paramsMultilingualTrans(Model, trans, ignoreFields);
+//AD.log('mlParams:', mlParams);
+
                             for(var p in mlParams) {
                                 if (typeof xactionParams[p] != 'undefined') {
                                     xEntry.params[p] = mlParams[p];
@@ -285,7 +288,7 @@ module.exports = {
 
             // step 3: now store this in the Transaction Log
             function(next) {
-//                AD.log('  - addTransaction.step 3');
+//AD.log('  - addTransaction.step 3');
 
                 NSServerTransactionLog.create({
                     user_uuid: user.user_uuid,
@@ -300,7 +303,7 @@ module.exports = {
             }
 
         ], function(err, results) {
-//            AD.log('  - addTransaction.final:');
+//AD.log('  - addTransaction.final:');
             if (err) {
 //AD.log.error('ERROR!');
                 dfd.reject(err);
@@ -332,11 +335,13 @@ module.exports = {
             dfd.reject(err);
 
         } else {
+//AD.log('  - checking map entry for model:'+xaction.model);
 
             // if this is a model we know about:
             if (mapModelToTransaction[xaction.model]) {
 
                 var map = mapModelToTransaction[xaction.model];
+//console.log(map);
                 DBHelper.applyMultilingualTransaction({
                     userUUID:userUUID,
                     operation:xaction.operation,
@@ -370,268 +375,6 @@ module.exports = {
         return dfd;
 
      }, // applyClientTransaction
-
-     /* Applies a transaction to the Campus model.
-      * @return deferred object
-      */
-/*
-     applyCampusTransaction : function(userUUID, operation, params) {
-
-         var dfd = $.Deferred();
-
-         switch(operation){
-
-             case 'create':
-
-
-                 DBHelper.multilingualCreate(NSServerCampus, params)
-                 .then(function(campus){
-                     // Add entry to association model
-                      var ucParms = {user_uuid : userUUID,
-                             campus_uuid : campus.campus_uuid};
-
-                     NSServerUserCampus.create(ucParms)
-                     .done(function(err, userCampus){
-                         if (err) {
-                             // Failed to add entry to association table,
-                             // remove previous created entry
-                             DBHelper.multilingualDestroy(NSServerCampus, {id : campus.id}, 'campus_id')
-                             .then(function(){}) // ignore return status
-                             .fail(function(err){});
-                             dfd.reject(err);
-                         } else {
-                             console.log('Created campus entry ' + campus.campus_uuid + ' for user ' + userUUID);
-                             dfd.resolve();
-                         }
-                     });
-                 })
-                 .fail(function(err){
-                     dfd.reject(err);
-                 });
-                 // Create campus entry
-
-                 break; // create
-
-             case 'update':
-
-                 NSServerCampus.findOne({campus_uuid: params.campus_uuid})
-                 .done(function(err, campus){
-                     if(!err) {
-                         if ( ! campus.userModifyRestricted() ) {
-                             var transParms = {};
-                             if ( undefined != params.campus_label )
-                                 transParms.campus_label = params.campus_label;
-                             if ( undefined != params.long_name )
-                                 transParms.long_name = params.long_name;
-
-                             var criteria = { campus_id     : campus.id,
-                                              language_code : params.language_code
-                                            };
-
-                             NSServerCampusTrans.update(criteria, transParms)
-                             .done(function(err, trans){
-                                 if (!err) {
-                                     console.log('Updated campus entry for campus ' + campus.campus_uuid);
-                                     dfd.resolve();
-                                 } else {
-                                     dfd.reject(err);
-                                 }
-                             });
-
-                         } else {
-                             console.log('Unable to update campus entry, permission denied');
-                             dfd.resolve(); // Continue processing transaction log
-                         }
-
-                     } else { // Unable to find campus
-                         dfd.reject(err);
-                     }
-                 });
-                  break; // update
-
-             case 'destroy':
-
-                 NSServerCampus.findOne({campus_uuid: params.campus_uuid})
-                 .done(function(err, campus){
-                     if(err) {
-                         dfd.reject(err);
-                     } else if (undefined == campus) {
-                         // campus not found
-                         dfd.resolve();
-                     } else {
-                         // Determine if campus can be destroyed
-                         if ( ! campus.userModifyRestricted() ) {
-                             console.log('about to delete user-campus');
-                             NSServerUserCampus.destroy({user_uuid : userUUID, campus_uuid : params.campus_uuid})
-                             .done(function(err){
-                                 if (err) {
-                                     dfd.reject(err);
-                                 } else {
-                                     console.log('about to delete campus');
-                                     DBHelper.multilingualDestroy(NSServerCampus, {campus_uuid : params.campus_uuid}, 'campus_id')
-                                     .then(function(){
-                                         console.log('Deleted campus ' + params.campus_uuid + ' for user ' + userUUID);
-                                         NSServerUser.findOne({user_uuid : userUUID})
-                                         .done(function(err,user){
-                                             DBHelper.addTransaction('destroy', campus, user).
-                                             then(function(){
-                                                 dfd.resolve();
-                                             })
-                                             .fail(function(err){
-                                                 console.log('Failed to add transaction for campus destroy, ' + err);
-                                                 dfd.reject(err);
-                                             });
-
-                                         });
-                                     })
-                                     .fail(function(err){
-                                         console.log(err);
-                                         dfd.reject(err);
-                                     });
-                                 }
-
-                             });
-
-                          } else {
-                              console.log('Failed to delete campus, permission denied');
-                              dfd.resolve(); // Continue processing transaction log
-                          }
-                      }
-                 });
-
-              break; // destroy
-
-             default: // unrecognized operation
-                 var err = new Error('Unrecognized operation in client transaction for Campus model');
-                 dfd.reject(err);
-                 break; // default
-         } // switch
-
-         return dfd;
-
-     }, // applyCampusTransaction
-*/
-     /* Applies a transaction to the Contact model.
-      * @return deferred object
-      */
-     applyContactTransaction : function(userUUID, operation, params){
-
-         var dfd = $.Deferred();
-
-         switch(operation){
-
-             case 'create':
-
-                 NSServerContact.create(params)
-                 .done(function(err, contact){
-                     if (err) {
-                         dfd.reject(err);
-                     } else {
-                         NSServerUserContact.create({
-                             user_uuid:userUUID,
-                             contact_uuid:contact.contact_uuid
-                             })
-                         .done(function(err, userContact) {
-                             if(err){
-                                 // Unable to add record to joining model
-                                 // Destroy orphaned record, ignore return status
-                                 NSServerContact.destroy({contact_uuid:contact.contact_uuid})
-                                 .done(function(err){}); // done handler required
-                                 dfd.reject(err);
-                             } else {
-                                 console.log('Added new contact for user ' + userUUID);
-                                 dfd.resolve();
-                             }
-                         });
-                     }
-                 });
-                 break; // create
-
-             case 'update':
-                 //
-                 // NOTE: Syntax difference when calling update, no .done() method
-                 NSServerContact.update({contact_uuid : params.contact_uuid}, params,
-                     function(err, contact){
-                         if (err){
-                             dfd.reject(err);
-                         } else {
-                             console.log('Updated contact ' + params.contact_uuid +
-                                     ' for user ' + userUUID);
-                             dfd.resolve();
-                         }
-                     });
-                 break; // update
-
-             case 'destroy':
-
-                  NSServerUserContact.find({contact_uuid:params.contact_uuid})
-                 .done(function(err, userContacts){
-                     if(err){
-                         dfd.reject(err);
-                     } else {
-                         // Destroy joining model entry
-                          NSServerUserContact.destroy(
-                             {user_uuid:userUUID,
-                             contact_uuid:params.contact_uuid})
-                         .done(function(err){
-                             if (err) {
-                                 dfd.reject(err);
-                             } else {
-                                 console.log('Destroyed contact ' + params.contact_uuid +
-                                         ' for user ' + userUUID);
-                                 // add transaction for this user
-                                 NSServerUser.findOne({user_uuid : userUUID})
-                                 .done(function(err,user){
-                                     if(err) {
-                                         dfd.reject(err);
-                                     } else {
-                                         NSServerContact.findOne({contact_uuid : params.contact_uuid})
-                                         .done(function(err,contact){
-                                             if (err){
-                                                 dfd.reject(err);
-                                             } else {
-                                                 DBHelper.addTransaction('destroy', contact, user).
-                                                 then(function(){
-                                                     // If the user is the only person related to this contact,
-                                                     // destroy the contact. Otherwise, someone else is using
-                                                     // the same contact so we keep it.
-                                                     if ( 1 == userContacts.length ) {
-                                                         // Destroy contact, ignore errors
-                                                         NSServerContact.destroy({ contact_uuid : params.contact_uuid})
-                                                         .done(function(err){
-                                                             dfd.resolve();
-                                                         });
-
-                                                     } else {
-                                                         dfd.resolve();
-                                                     }
-                                                 })
-                                                 .fail(function(err){
-                                                     console.log('Failed to add transaction for contact destroy, ' + err);
-                                                     dfd.reject(err);
-                                                 });
-                                             }
-                                         });
-                                     }
-                                 });
-                             }
-
-                        });
-                      }
-
-                 });
-                 break; // destroy
-
-             default: // unrecognized operation
-                 var err = new Error('Unrecognized operation in client transaction for Contact model');
-                 dfd.reject(err);
-                 break; // default
-
-         } // switch
-
-         return dfd;
-
-     }, // applyContactTransaction
 
 
 
@@ -773,7 +516,7 @@ module.exports = {
                             })
                             .fail(function(err){
 
-//console.log('Failed to add transaction for campus destroy, ' + err);
+//console.log('Failed to add transaction for campus , ' + err);
                               console.trace();
                               next(err);
                             })
@@ -813,7 +556,8 @@ module.exports = {
 
                         // Step 1:  compile condition
                         function(next) {
-
+//AD.log('  step1');
+//AD.log('      - cond:', cond);
                             if (cond == null) {
                              // shoot!
                                 AD.log('<yellow><bold>warn:</bold><yellow> applyMultilingualTransaction()->update: given params have no id info:');
@@ -830,7 +574,7 @@ module.exports = {
 
                         // step 2: PUll current entry
                         function(next) {
-
+//AD.log('  step2');
                             table.findOne(cond)
                             .fail(function(err) {
                                 next(err);
@@ -845,7 +589,9 @@ module.exports = {
 
                         // step 3: Is Entry Restricted?
                         function(next) {
-
+//AD.log('  step3:');
+//AD.log('     - entry:');
+//console.log(entry);
                             if (entry.userModifyRestricted) {
                                 isRestricted = entry.userModifyRestricted();
 //                            } else {
@@ -858,10 +604,10 @@ module.exports = {
 
                         // step 4.Normal: Update Table.
                         function(next) {
-
+//AD.log('  step 4:Normal:');
                             // if this is not a multilingual Table
                             if (!DBHelper.isMultilingualTable(table)) {
-//AD.log('  normal.update()');
+//AD.log('    - normal.update()');
                                 // if this entry is not restricted
                                 if ( !isRestricted ) {
 
@@ -902,10 +648,10 @@ module.exports = {
 
                         // step 4.Multilingual: Update Table
                         function(next) {
-
+//AD.log('  step4:Multilingual:');
                             // if this is a multilingual Table
                             if (DBHelper.isMultilingualTable(table)) {
-//AD.log('    multilingual.update():');
+//AD.log('    - multilingual.update():');
                                 // if this entry is not restricted
                                 if ( !isRestricted ) {
 
@@ -940,7 +686,7 @@ module.exports = {
 
                         // Step 5: Add a transaction log for this user
                         function(next) {
-
+//AD.log('  step5:');
                             DBHelper.addTransaction({
                                 operation:'update',
                                 obj:entry,
@@ -960,6 +706,7 @@ module.exports = {
 
                         // Step 6: display the console.log
                         function(next) {
+//AD.log('  step6:');
                             AD.log(AD.util.string.render(opts.log, entry));
                             next();
                         }
@@ -977,7 +724,7 @@ module.exports = {
 
 
                  case 'destroy':
-AD.log('applyMultilingualTransaction->destroy:');
+//AD.log('applyMultilingualTransaction->destroy:');
 
                     var cond = paramsCondition(table, params); //{};
                     if (cond == null) {
@@ -1211,14 +958,7 @@ AD.log('applyMultilingualTransaction->destroy:');
                  } else {
                      // Gather translation parameters and create entry in translation model
                      var transParms = paramsMultilingualTrans(model, params); //{};
-//                     for (key in modelTrans.attributes) {
-//                         if (undefined != params[key]) {
-//                             transParms[key] = params[key];
-//                         }
-//                     }
-//AD.log('multilingualCreate: entry.addTranslation()');
-//AD.log('    - transParms:');
-//AD.log(transParms);
+
                      //entry.addTranslation(transParms)
                      DBHelper.addTranslation(entry, transParms)
                      .then(function(){
@@ -1335,51 +1075,8 @@ AD.log('applyMultilingualTransaction->destroy:');
 
                  },
 
-/*
-                 // step 2: if that didn't work, then manually search table
-                 //         ==> Yes, stupid work around for unknown .findOne()
-                 //             problem!  Seems to only plague me on Step table.
-                 function(next) {
 
-                     if (entry) {
-                         next();
-                     } else {
-
-                         AD.log('<yellow><bold>SHOOT!:</bold> did not find an entry:</yellow>');
-                         AD.log('   <yellow>model:</yellow>'+model.GenModel());
-                         AD.log('   <yellow>dataCond:</yellow>', dataCondition);
-
-                         AD.log('   <yellow>attempting manual lookup!</yellow>');
-
-                         var isEqual = function (a, b) {
-                             for (var i in b) {
-                                 AD.log('a['+i+']:', a[i]);
-                                 AD.log('b['+i+']:', b[i]);
-                                 if (a[i] != b[i])  { AD.log('  -> not Equal'); return false; }
-                             }
-
-                             AD.log('!!!! isEqual !!!');
-                             return true;
-                         };
-
-                         model.find()
-                         .then(function(entries){
-
-                             entries.forEach(function(theEntry){
-                                 if (isEqual(theEntry, dataCondition)){
-                                     AD.log('<yellow><bold>YAAARRRRGGGGGHHHHH!</bold>: I found a matching entry:</yellow>');
-                                     AD.log(theEntry);
-                                     entry = theEntry;
-                                 }
-                             });
-
-                             next();
-                         });
-                     }
-                 },
-*/
-
-                 // step 3: now perform the update(s)
+                 // step 2: now perform the update(s)
                  function(next) {
 
                      if (entry) {
@@ -1454,111 +1151,6 @@ AD.log('applyMultilingualTransaction->destroy:');
              });
 
 
-
-/*
-             var dataCondition = paramsMultilingualData(model, condition, {language_code:1});
- AD.log('      dataCondition:', dataCondition);
-             model.findOne(dataCondition)
-             .fail(function(err){
-                 AD.log.error('<bold>Error:</bold> finding multilingual data:()');
-                 AD.log('mode:'+model.GenModel());
-                 AD.log('dataCondition:', dataCondition);
-                 console.log(err);
-                 dfd.reject(err);
-             })
-             .then(function(entry){
-AD.log('      model.findOne().then():', entry);
-console.log(entry);
-                 // if we found this entry
-
-                var cond = dataCondition;
-                if (entry) {
-
-                    cond = entry.uniqueCondition();
-                } else {
-                    AD.log('<yellow><bold>SHOOT!:</bold> did not find an entry:</yellow>');
-                    AD.log('   <yellow>model:</yellow>'+model.GenModel());
-                    AD.log('   <yellow>dataCond:</yellow>', dataCondition);
-
-                    model.find()
-                    .then(function(entries){
-                        AD.log('   <yellow> the entries:</yellow>');
-                        console.log(entries);
-                        entries.forEach(function(entry){
-                            if (entry.step_uuid == dataCondition.step_uuid){
-                                AD.log('<yellow><bold>YAAARRRRGGGGGHHHHH!</bold>: I found a matching entry:</yellow>');
-                                AD.log(entry);
-                            }
-                        });
-                    });
-                }
-
-                    async.parallel([
-
-                        function(done) {
-AD.log('          - updating data table');
-                            // update the Data table
-                            var dataValues = paramsMultilingualData(model, params, cond);
-//                            var cond = entry.uniqueCondition();
-AD.log('              - cond:',cond);
-AD.log('              - dataValues:',dataValues);
-                            if (!AD.util.obj.isEmpty(dataValues)) {
-                                model.update(cond, dataValues)
-                                .done(function(err,results){
-AD.log('                  ==> dataModel.update().done()');
-                                    done(err);
-                                });
-                            } else {
-AD.log('                  ==> no data values to update:');
-                                done();
-                            }
-                        },
-
-                        function(done) {
-AD.log('          - updating trans table');
-                            // update the multilingual table
-                            var transValues = paramsMultilingualTrans(model, params);
-                            var transCondition = { language_code : params.language_code };
-                            transCondition[model.getFieldTransFK()] = entry.id;
-AD.log('              - transCond:',transCondition);
-AD.log('              - transValues:',transValues);
-                            if (!AD.util.obj.isEmpty(transValues)) {
-                                model.getTransModel().update(transCondition, transValues)
-                                .done(function(err, results) {
-AD.log('                  ==> transModel.update().done()');
-                                    done(err, results);
-                                });
-                            } else {
-AD.log('                  ==> no transData to update');
-                                done();
-                            }
-                        }
-
-                    ], function(err, results) {
-AD.log('          --> async.parallel.final():');
-                        if (err) {
-                            AD.log.error('<bold>Error:</bold> performing multilingualUpdate(): ');
-                            AD.log(err);
-                            dfd.reject(err);
-                        } else {
-AD.log('            --> resolve()');
-                            dfd.resolve();
-                        }
-                    });
-
-
-//                }  else {
-//AD.log('      .... actually did not find entry:');
-//AD.log('           model:', model.GenModel());
-//AD.log('           dataCondition:', dataCondition);
-//AD.log('           params:', params);
-//
-//                    // we didn't find an entry, so nothing to do:
-//                    dfd.resolve();
-//                }
-
-             });
-*/
          } else {
 
              var text = 'DBHelper.multilingualUpdate()  called with no language_code set.';
@@ -1643,6 +1235,7 @@ AD.log('            --> resolve()');
          var param = {language_code:lang};
          var fkField = obj._Klass().getFieldTransFK();
          param[fkField] = obj.id;
+//AD.log('    param:', param);
 
          obj._Klass().getTransModel().find(param)
          .fail(function(err){
@@ -1650,6 +1243,7 @@ AD.log('            --> resolve()');
              dfd.reject(err);
          })
          .then(function(listTrans){
+//AD.log('listTrans:', listTrans);
 
              var thisTrans = {};
              for (var lt=0; lt<listTrans.length; lt++) {
@@ -1657,6 +1251,7 @@ AD.log('            --> resolve()');
              }
 
              obj.translations = thisTrans;
+//AD.log('thisTrans:',thisTrans);
 
              if (cb) cb(null, listTrans[0]);
              dfd.resolve(listTrans[0]);
@@ -1696,20 +1291,34 @@ var paramsMultilingualTrans = function(model, params, ignore) {
 
     ignore = ignore || {};
 
+    var transParms = {};
+
+    if (typeof params == 'undefined') {
+        AD.log('<yellow><bold>warn:</bold> paramsMultilingualTrans() called with no params');
+        return transParms;
+    }
+
     var modelTrans = null;
-    if ( undefined != model.getTransModel) {
+    if ( DBHelper.isMultilingualTable(model)) {
         modelTrans = model.getTransModel();
     };
 
-    var transParms = {};
+
     if (modelTrans) {
+//AD.log('paramsMultilingualTrans() : scanning attributes:');
+//AD.log('params:');
+//console.log(params);
+//AD.log('ignore:', ignore);
 
         for (key in modelTrans.attributes) {
-
+//AD.log('key:', key);
             // if key is not in ignore list
             if ('undefined' == typeof ignore[key]) {
+//AD.log('   ignoreKey passed.');
 
                 if ('undefined' != typeof params[key]) {
+//AD.log('   params[key] passed:');
+
                     transParms[key] = params[key];
                 }
             }
@@ -1719,7 +1328,7 @@ var paramsMultilingualTrans = function(model, params, ignore) {
         AD.log('<yellow><bold>warn:</bold> no translation table found for model.</yellow>');
         console.log(model);
     }
-
+//AD.log('transParms:', transParms);
     return transParms;
 
 };
