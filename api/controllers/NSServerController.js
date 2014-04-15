@@ -14,6 +14,7 @@
  *
  * @docs        :: http://sailsjs.org/#!documentation/controllers
  */
+var AD = require('ad-utils');
 
 module.exports = {
 
@@ -24,11 +25,12 @@ module.exports = {
    */
   ping: function (req, res) {
 
-      console.log('---------------------');
-      console.log('Ping ...');
-      console.log('from ip addr: '+req.connection.remoteAddress);
-      console.log();
-      console.log('cas baseuri:'+ CAS.baseURI());
+      AD.log();
+      AD.log('<green><bold>---------------------</bold></green>');
+      AD.log('Ping ...');
+      AD.log('from ip addr: '+req.connection.remoteAddress);
+      AD.log();
+      AD.log('cas baseuri:'+ CAS.baseURI());
 
     // Send a JSON response
     return res.json({
@@ -46,32 +48,11 @@ module.exports = {
    *    `/nsserver/auth`
    */
   auth: function (req, res) {
-      // TODO: for testing: these are valid users:
-//      var validUsers = {
-//              'jon@vellacott.co.uk':'manila',
-//              'lucia4070@nate.com':'manila'
-//      }
-//      var user = req.param('username');
-//      var pword = req.param('password');
 
-      console.log('---------------------');
-      console.log('/nsserver/auth ...');
-      console.log('from ip addr: '+req.connection.remoteAddress);
-
-//      if (validUsers[user] == pword) {
-//          console.log('  -> auth success.');
-//          console.log();
-//          // Send a JSON response
-//          return ADCore.comm.success(res, {});
-//
-//      } else {
-//          console.log('  -> auth failure.');
-//          console.log('  -> username:'+user);
-//          console.log('  -> password:'+pword);
-//          console.log();
-//          var err = new Error('Invalid Username or password ');
-//          return ADCore.comm.error(res, err);
-//      }
+      AD.log();
+      AD.log('<green><bold>---------------------</bold></green>');
+      AD.log('<green><bold>/nsserver/auth ...</bold></green>');
+      AD.log('from ip addr: '+req.connection.remoteAddress);
 
       ADCore.comm.success(res, {});
   },
@@ -85,21 +66,16 @@ module.exports = {
 
       var log = req.appdev.transactionLog;
       var lastSyncTimestamp = Date.now();
-      console.log(' ==> lastSyncTimestamp:'+lastSyncTimestamp)
+
+      AD.log();
+      AD.log('<green><bold>SYNC:</bold></green><yellow><bold>Complete!</bold></yellow>');
+      AD.log(' ==> lastSyncTimestamp:'+lastSyncTimestamp);
+
       ADCore.comm.success(res, {
           "lastSyncTimestamp": lastSyncTimestamp,
           "transactionLog":log
         });
 
-/*
-    NSServerSync.synchronize(req, res)
-    .done(function(data) {
-      ADCore.comm.success(res, data);
-    })
-    .fail(function(err){
-      ADCore.comm.error(res, err);
-    });
-*/
   },
 
 
