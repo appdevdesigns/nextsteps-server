@@ -32,14 +32,17 @@ module.exports = {
       AD.log();
       AD.log('cas baseuri:'+ CAS.baseURI());
 
-    // Send a JSON response
-    return res.json({
-      status: 'pong',
-      "CAS": {
-          uri:CAS.baseURI(),
-          authURI:sails.config.appdev.authURI
-      }
-    });
+      // Send a JSON response
+      return res.json({
+          status: 'pong',
+          "CAS": {
+              uri:CAS.baseURI(),
+              authURI:sails.config.appdev.authURI
+          },
+          uris:[
+              { key:'sync', uri:'nsserver/sync' }
+          ]
+      });
   },
 
 
