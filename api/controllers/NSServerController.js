@@ -69,7 +69,7 @@ module.exports = {
 
       AD.log();
       AD.log('<green><bold>SYNC:</bold></green><yellow><bold>Complete!</bold></yellow>');
-      AD.log(' ==> lastSyncTimestamp:'+lastSyncTimestamp);
+      AD.log('  ==> lastSyncTimestamp:'+lastSyncTimestamp);
 
       ADCore.comm.success(res, {
           "lastSyncTimestamp": lastSyncTimestamp,

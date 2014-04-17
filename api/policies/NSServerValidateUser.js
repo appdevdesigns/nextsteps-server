@@ -159,7 +159,6 @@ module.exports = function(req, res, next) {
     console.log();
 
 
-    // TODO: Implement ADCore.user.current(req).GUID,
     // Assign userLang from session information
     var userGuid = ADCore.user.current(req).GUID();
     var userLang = ADCore.user.current(req).getLanguageCode(); // get user default language from session info
