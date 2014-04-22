@@ -32,6 +32,11 @@ module.exports = {
       AD.log();
       AD.log('cas baseuri:'+ CAS.baseURI());
 
+      // make sure uriAuth begins with a '/'
+      var uriAuth = sails.config.appdev.authURI;
+      uriAuth = '/' + uriAuth;
+      uriAuth = uriAuth.replace('//', '/');
+
       // Send a JSON response
       return res.json({
           status: 'pong',
@@ -39,9 +44,11 @@ module.exports = {
               uri:CAS.baseURI(),
               authURI:sails.config.appdev.authURI
           },
-          uris:[
-              { key:'sync', uri:'nsserver/sync' }
-          ]
+          uris:{
+              'sync': '/nsserver/sync',
+              'auth': uriAuth
+          }
+
       });
   },
 
