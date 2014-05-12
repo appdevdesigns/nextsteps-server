@@ -141,7 +141,7 @@ module.exports = {
             }
         })
         .fail(function(err){
-            console.log("DBHelper.manyThrough() err: "+err);
+            AD.log.error("DBHelper.manyThrough() err: ",err);
             if (cb) cb(err);
             dfd.reject(err);
         });
@@ -313,15 +313,13 @@ module.exports = {
 
         });
 
-
-
         return dfd;
     },
 
 
 
 
-   applyClientTransaction : function(userUUID, xaction) {
+    applyClientTransaction : function(userUUID, xaction) {
 
         var dfd = $.Deferred();
 
@@ -363,7 +361,7 @@ module.exports = {
                 err.xaction = xaction;
 
                 AD.log.error(err.message);
-                console.log(err);
+//                console.log(err);
 
                 // do we stop on this error? or attempt to continue?
 //                dfd.reject(err);
@@ -374,34 +372,36 @@ module.exports = {
 
         return dfd;
 
-     }, // applyClientTransaction
+    }, // applyClientTransaction
 
 
 
-     applyMultilingualTransaction : function(opts) {
+    applyMultilingualTransaction : function(opts) {
 
-         var dfd = $.Deferred();
+        var dfd = $.Deferred();
 
-         var userUUID = opts.userUUID;
-         var operation = opts.operation;
-         var params = opts.params;
-         var table = opts.table;
-         var userAssocTable = opts.assocTable;
+        var userUUID = opts.userUUID;
+        var operation = opts.operation;
+        var params = opts.params;
+        var table = opts.table;
+        var userAssocTable = opts.assocTable;
 
-         var entry = null;
-         var isRestricted = false;  // indicates if this entry is restricted from update/destroy operations
+        var entry = null;
+        var isRestricted = false;  // indicates if this entry is restricted from update/destroy operations
 
-         // all these operations need a user object:
-         NSServerUser.findOne({user_uuid : userUUID})
-         .fail(function(err) {
-             AD.log.error('<bold>ERROR:</bold> .applyTransaction() could not find user entry for user_uuid:'+userUUID);
-             dfd.reject(err);
-         })
-         .then(function(user){
+        // all these operations need a user object:
+        NSServerUser.findOne({user_uuid : userUUID})
+        .fail(function(err) {
+            AD.log.error('<bold>ERROR:</bold> .applyTransaction() could not find user entry for user_uuid:'+userUUID);
+            dfd.reject(err);
+        })
+        .then(function(user){
 
-             switch(operation){
+            var optsLog = AD.util.string.render(opts.log, { userUUID: userUUID });
 
-                 case 'create':
+            switch(operation){
+
+                case 'create':
 //AD.log('applyMultilingualTransaction->create:');
 
                     async.series([
@@ -529,7 +529,7 @@ module.exports = {
                         //// step 5 : console log message
                         function(next) {
 //AD.log('step5');
-                            AD.log(AD.util.string.render(opts.log, entry));
+                            AD.log(AD.util.string.render(optsLog, entry));
                             next();
                         }
 
@@ -580,8 +580,15 @@ module.exports = {
                                 next(err);
                             })
                             .then(function(currEntry){
-                                entry = currEntry;
-                                next();
+
+                                if (undefined == currEntry) {
+                                     // entry not found
+                                     AD.log('<yellow><bold>warn:</bold></yellow> UPDATE(): could not find entry given condition:', cond);
+                                     dfd.resolve();  // <-- exit without ceasing progress
+                                 } else {
+                                    entry = currEntry;
+                                    next();
+                                }
                             });
 
                         },
@@ -592,6 +599,7 @@ module.exports = {
 //AD.log('  step3:');
 //AD.log('     - entry:');
 //console.log(entry);
+
                             if (entry.userModifyRestricted) {
                                 isRestricted = entry.userModifyRestricted();
 //                            } else {
@@ -599,6 +607,7 @@ module.exports = {
 //                                AD.log(entry);
                             }
                             next();
+
                         },
 
 
@@ -694,7 +703,7 @@ module.exports = {
                             })
                             .fail(function(err){
 
-//console.log('Failed to add transaction for campus destroy, ' + err);
+AD.log.error('Failed to add transaction for update(), err:', err);
                               console.trace();
                               next(err);
                             })
@@ -707,23 +716,23 @@ module.exports = {
                         // Step 6: display the console.log
                         function(next) {
 //AD.log('  step6:');
-                            AD.log(AD.util.string.render(opts.log, entry));
+                            AD.log(AD.util.string.render(optsLog, entry));
                             next();
                         }
 
                     ], function(err, results){
 
                         if (err) {
-                            dfd.reject(err);
+                            dfd.reject(err);    
                         } else {
                             dfd.resolve();
                         }
                     });
 
-                      break; // update
+                    break; // update
 
 
-                 case 'destroy':
+                case 'destroy':
 //AD.log('applyMultilingualTransaction->destroy:');
 
                     var cond = paramsCondition(table, params); //{};
@@ -735,190 +744,188 @@ module.exports = {
                         dfd.resolve();
                         return dfd;
                     }
-                     table.findOne(cond)
-                     .done(function(err, entry){
-                         if(err) {
-                             AD.log.error('<bold>ERROR:</bold> error finding entry with condition:');
-                             AD.log(cond);
-                             AD.log('for table:');
-                             AD.log(table);
-                             console.log(err);
-                             dfd.reject(err);
-                         } else if (undefined == entry) {
-                             // entry not found
-                             AD.log('<yellow><bold>warn:</bold></yellow> could not find entry given condition:');
-                             AD.log(cond);
-                             dfd.resolve();
-                         } else {
+                    table.findOne(cond)
+                    .done(function(err, entry){
+                    if(err) {
+                        AD.log.error('<bold>ERROR:</bold> error finding entry with condition:');
+                        AD.log(cond);
+                        AD.log('for table:');
+                        AD.log(table);
+                        console.log(err);
+                        dfd.reject(err);
+                    } else if (undefined == entry) {
+                        // entry not found
+                        AD.log('<yellow><bold>warn:</bold></yellow> could not find entry given condition:',cond);
+                        dfd.resolve();
+                    } else {
 
-                             // Determine if entry can be destroyed
+                            // Determine if entry can be destroyed
 
-                             if (entry.userModifyRestricted) {
-                                 isRestricted = entry.userModifyRestricted();
-                             }
-                             if ( !isRestricted ) {
+                            if (entry.userModifyRestricted) {
+                                isRestricted = entry.userModifyRestricted();
+                            }
+                            if ( !isRestricted ) {
 
-                                 async.series([
+                                async.series([
 
-                                     // if there is an Association Table delete that first:
-                                     function(next) {
+                                    // if there is an Association Table delete that first:
+                                    function(next) {
 
-                                         // if we have an association table:
-                                         if (userAssocTable) {
+                                        // if we have an association table:
+                                        if (userAssocTable) {
 
-                                          // Add entry to association model
-                                             var ucParms = {user_uuid : userUUID };
-                                             ucParms[table.getFieldUUID()] = entry.uuid();
-                                             // alternatively: ucParms[table.getFieldUUID()] = params[table.getFieldUUID()];
+                                            // Add entry to association model
+                                            var ucParms = {user_uuid : userUUID };
+                                            ucParms[table.getFieldUUID()] = entry.uuid();
+                                            // alternatively: ucParms[table.getFieldUUID()] = params[table.getFieldUUID()];
 
-                                             AD.log('  - about to delete association entry');
-                                             userAssocTable.destroy(ucParms)
-                                             .done(function(err){
-                                                 if (err) {
-                                                     next(err);
-                                                 } else {
-                                                     next();
-                                                 }
-                                             });
+                                            AD.log('  - about to delete association entry');
+                                            userAssocTable.destroy(ucParms)
+                                            .done(function(err){
+                                                if (err) {
+                                                    next(err);
+                                                } else {
+                                                    next();
+                                                }
+                                            });
 
-                                         } else {
+                                        } else {
 
-                                             // no?  just move along then.
-                                             next();
-                                         }
+                                            // no?  just move along then.
+                                            next();
+                                        }
 
-                                     },
+                                    },
 
 
-                                     // Normal Table: Now delete the actual entry
-                                     function(next) {
+                                    // Normal Table: Now delete the actual entry
+                                    function(next) {
 
-                                         // if this is a normal table
-                                         if (!DBHelper.isMultilingualTable(table)) {
+                                        // if this is a normal table
+                                        if (!DBHelper.isMultilingualTable(table)) {
 //                                             AD.log('  - about to delete entry');
 
-                                             table.destroy(cond)
-                                             .fail(function(err){
-                                                 AD.log.error('<bold>Error:</bold> destroying entry failed!');
-                                                 AD.log(cond);
-                                                 console.log(err);
-                                                 next(err);
-                                             })
-                                             .then(function(){
+                                            table.destroy(cond)
+                                            .fail(function(err){
+                                                AD.log.error('<bold>Error:</bold> destroying entry failed!', cond, err);
+                                                console.log(err);
+                                                next(err);
+                                            })
+                                            .then(function(){
 
-                                                 // did it!
-                                                 AD.log(AD.util.string.render(opts.log, entry));
-                                                 next();
-                                             });
+                                                // did it!
+                                                AD.log(AD.util.string.render(optsLog, entry));
+                                                next();
+                                            });
 
-                                         } else {
-                                             next();
-                                         }
+                                        } else {
+                                            next();
+                                        }
 
-                                     },
-
-
-                                     // Multilingual Table: Now delete the actual entry
-                                     function(next) {
-
-                                         // if this is a multilingual table
-                                         // multilingual tables have a .getTransModel()
-                                         if ( DBHelper.isMultilingualTable(table) ) {
-
-                                             AD.log('  - about to delete entry');
-                                             DBHelper.multilingualDestroy(table, cond, table.getFieldTransFK())
-                                             .fail(function(err){
-                                                 console.log(err);
-                                                 next(err);
-                                             })
-                                             .then(function(){
-
-                                                 // did it!
-                                                 AD.log(AD.util.string.render(opts.log, entry));
-                                                 next();
-
-                                             });
-                                         } else {
-                                             next();
-                                         }
-
-                                     },
+                                    },
 
 
-                                     // ok, now make an entry in the transaction log for the user
-                                     function(next) {
+                                    // Multilingual Table: Now delete the actual entry
+                                    function(next) {
 
-                                         DBHelper.addTransaction({
-                                             operation:'destroy',
-                                             obj:entry,
-                                             user:user
-                                         })
-                                         .fail(function(err){
-                                           next(err);
-                                         })
-                                         .then(function(){
-                                             next();
-                                         });
+                                        // if this is a multilingual table
+                                        // multilingual tables have a .getTransModel()
+                                        if ( DBHelper.isMultilingualTable(table) ) {
 
-                                     }
-                                 ], function(err, results) {
+                                            AD.log('  - about to delete entry');
+                                            DBHelper.multilingualDestroy(table, cond, table.getFieldTransFK())
+                                            .fail(function(err){
+                                                AD.log.error('<bold>Error:</bold> destroying multilingual entry failed:', cond, err);
+                                                console.log(err);
+                                                next(err);
+                                            })
+                                            .then(function(){
 
-                                     if (err) {
+                                                // did it!
+                                                AD.log(AD.util.string.render(optsLog, entry));
+                                                next();
 
-                                         AD.log.error('<bold>ERROR:</bold> problem processing this delete transaction');
-                                         AD.log(params);
-                                         dfd.reject(err);
+                                            });
+                                        } else {
+                                            next();
+                                        }
 
-                                     } else {
-
-                                         AD.log('  - destroy transaction completed.');
-                                         dfd.resolve();
-                                     }
-                                 });
+                                    },
 
 
-                              } else {  // isRestricted
+                                    // ok, now make an entry in the transaction log for the user
+                                    function(next) {
 
-                                  AD.log('<yellow><bold>warn:</bold></yellow> Failed to delete entry: permission denied');
-                                  AD.log(entry);
-                                  dfd.resolve(); // Continue processing transaction log
-                              }
+                                        DBHelper.addTransaction({
+                                            operation:'destroy',
+                                            obj:entry,
+                                            user:user
+                                        })
+                                        .fail(function(err){
+                                            next(err);
+                                        })
+                                        .then(function(){
+                                            next();
+                                        });
 
-                          }  // if valid entry
+                                    }
+                                    ], function(err, results) {
 
-                     });  // table.findOne().done();
+                                        if (err) {
 
-                  break; // destroy
+                                            AD.log.error('<bold>ERROR:</bold> problem processing this delete transaction');
+                                            AD.log(params);
+                                            dfd.reject(err);
 
-                 default: // unrecognized operation
-                     var text = 'Unrecognized operation ['+operation+'] in client transaction for model';
-                     AD.log.error('<bold>ERROR:</bold>'+text);
-                     var err = new Error(text);
-                     dfd.reject(err);
-                     break; // default
-             } // switch
+                                        } else {
 
-
-         });    // NSUser.findOne()
-
-         return dfd;
-
-     }, // applyMultilingualTransaction
+                                            AD.log('  - destroy transaction completed.');
+                                            dfd.resolve();
+                                        }
+                                    });
 
 
+                            } else {  // isRestricted
 
-     /**
-      * @function isMultilingualTable
-      *
-      * Function to create an entry in the primary and translation tables for a model.
-      *
-      * @param {object} table - the model definition of the data table
-      * @return {bool} true if a multilingual table, false otherwise
-      */
-     isMultilingualTable: function(table) {
+                                AD.log('<yellow><bold>warn:</bold></yellow> Failed to delete entry: permission denied');
+                                AD.log(entry);
+                                dfd.resolve(); // Continue processing transaction log
+                            }
 
-         return (undefined != table.getTransModel);
-     },
+                        }  // if valid entry
+
+                    });  // table.findOne().done();
+                    break; // destroy
+
+                default: // unrecognized operation
+                    var text = 'Unrecognized operation ['+operation+'] in client transaction for model';
+                    AD.log.error('<bold>ERROR:</bold>'+text);
+                    var err = new Error(text);
+                    dfd.reject(err);
+                    break; // default
+            } // switch
+
+
+        });    // NSUser.findOne()
+
+        return dfd;
+
+    }, // applyMultilingualTransaction
+
+
+
+    /**
+    * @function isMultilingualTable
+    *
+    * Function to create an entry in the primary and translation tables for a model.
+    *
+    * @param {object} table - the model definition of the data table
+    * @return {bool} true if a multilingual table, false otherwise
+    */
+    isMultilingualTable: function(table) {
+
+        return (undefined != table.getTransModel);
+    },
 
 
 
