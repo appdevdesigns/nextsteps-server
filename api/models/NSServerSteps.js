@@ -6,6 +6,7 @@
  *                 See also NSServerStepsTrans for translation strings related to this model.
  * @docs		:: http://sailsjs.org/#!documentation/models
  */
+var AD = require('ad-utils');
 var $ = require('jquery-deferred');
 
 module.exports = {
@@ -30,7 +31,7 @@ module.exports = {
 
          // Generate transaction entry
          transaction: function(operation, lang, cb) {
-             var dfd = $.Deferred();
+             var dfd = AD.sal.Deferred();
 /*
              var xEntry = {  'operation': operation,
                              'model': 'Step',
@@ -124,7 +125,7 @@ module.exports = {
 */
 
          campus: function(cb) {
-             var dfd = $.Deferred();
+             var dfd = AD.sal.Deferred();
              if (!this.isPersonal()) {
                  NSServerCampus.findOne({
                      campus_uuid: this.campus_uuid
@@ -155,9 +156,9 @@ module.exports = {
          // Get list of user objects associated with this step
          // Handles both personal steps and campus steps
          users: function(cb) {
-             var dfd = $.Deferred();
+             var dfd = AD.sal.Deferred();
 
-             var userListDfd = $.Deferred();
+             var userListDfd = AD.sal.Deferred();
              if (this.isPersonal()) {
                  // A Personal step; get the user UUIDs
                  userListDfd = getPersonalStepUsers(this);

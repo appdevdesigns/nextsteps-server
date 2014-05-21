@@ -6,6 +6,8 @@
  * @docs		:: http://sailsjs.org/#!documentation/models
  */
 
+var AD = require('ad-utils');
+
 module.exports = {
 
     connection: ['nextStepsServer'],
@@ -17,7 +19,7 @@ module.exports = {
         year_id	: 'INT',
         
         addTranslation: function(transEntry, cb) {
-            var dfd = $.Deferred();
+            var dfd = AD.sal.Deferred();
             transEntry.step_id = this.id;
             NSServerYearTrans.create(transEntry)
             .then(function(obj){

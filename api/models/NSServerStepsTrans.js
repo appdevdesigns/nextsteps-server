@@ -5,7 +5,6 @@
  * @description :: Translations for strings associated with NSServerSteps.
  * @docs		:: http://sailsjs.org/#!documentation/models
  */
-$ = require('jquery-deferred');
 var AD = require('ad-utils');
 
 module.exports = {
@@ -67,7 +66,7 @@ module.exports = {
 
 
 var createTransaction = function(id, operation){
-    var dfd = $.Deferred();
+    var dfd = AD.sal.Deferred();
     // Get an instance
     NSServerSteps.findOne(id)
     .then(function(step){
