@@ -10,6 +10,8 @@ var AD = require('ad-utils');
 
 module.exports = {
 
+    connection: ['nextStepsServer'],
+
     tableName: 'nextsteps_steps_trans',
 
     attributes: {

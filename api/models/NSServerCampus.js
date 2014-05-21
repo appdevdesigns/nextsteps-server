@@ -4,25 +4,27 @@
  * @module      :: Model NSServerCampus
  * @description :: A list of known campuses. The node_id field represents the GMA node id.
  *                 See also NSServerCampusTrans for translation strings associated with campuses.
- * @docs		:: http://sailsjs.org/#!documentation/models
+ * @docs        :: http://sailsjs.org/#!documentation/models
  */
 var $ = require('jquery-deferred');
 var AD = require('ad-utils');
 
 module.exports = {
 
+  connection: ['nextStepsServer'],
+
   tableName: 'nextsteps_campus',
 
   attributes: {
 
-  	/* e.g.
-  	nickname: 'string'
-  	*/
+    /* e.g.
+    nickname: 'string'
+    */
 
-    campus_uuid	: 'STRING',
+    campus_uuid : 'STRING',
 
 
-    node_id	: 'INTEGER',
+    node_id : 'INTEGER',
 
     // Is the user restricted from modifying this entry?
     userModifyRestricted: function() {

@@ -10,6 +10,8 @@ var $ = require('jquery-deferred');
 
 module.exports = {
 
+    connection: ['nextStepsServer'],
+
     tableName: 'nextsteps_steps',
 
     attributes: {
