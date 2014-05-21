@@ -24,6 +24,7 @@
   "dependencies": {
     "ad-utils": "git://github.com/appdevdesigns/ad-utils#v10",
     "gma-api": "git://github.com/appdevdesigns/gma-api",
-    "async": "^0.6.2"
+    "async": "^0.6.2",
+    "jquery-deferred": "^0.3.0"
   }
 }
