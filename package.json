@@ -9,7 +9,7 @@
   "scripts": {
     "test": "make test",
     "postinstall": "node setup/setup.js",
-    "postupdate" : "node setup/setup.js"
+    "postupdate": "node setup/setup.js"
   },
   "repository": {
     "type": "git",

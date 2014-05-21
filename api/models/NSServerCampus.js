@@ -6,7 +6,6 @@
  *                 See also NSServerCampusTrans for translation strings associated with campuses.
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
-var $ = require('jquery-deferred');
 var AD = require('ad-utils');
 
 module.exports = {
@@ -35,7 +34,7 @@ module.exports = {
 
     // Generate transaction entry
     transaction: function(operation, lang, cb) {
-        var dfd = $.Deferred();
+        var dfd = AD.sal.Deferred();
 /*
         var xEntry = {  'operation': operation,
                         'model': 'Campus',
@@ -141,7 +140,7 @@ module.exports = {
 */
 
     users: function(filter, cb) {
-        var dfd = $.Deferred();
+        var dfd = AD.sal.Deferred();
 
         if (typeof cb == 'undefined') {
             if (typeof filter == 'function') {
