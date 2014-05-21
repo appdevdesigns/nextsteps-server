@@ -24,77 +24,86 @@ var AD = require('ad-utils');
  * 'CampusStep':{}
  * ...
  */
-var mapModelToTransaction = {
-        'Campus': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> campus entry [campus_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> campus entry [campus_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> campus entry [campus_uuid] for user [userUUID]'
-            },
-            table:NSServerCampus,
-            assocTable:NSServerUserCampus
-        },
-        'Contact': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> contact entry [contact_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> contact entry [contact_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> contact entry [contact_uuid] for user [userUUID]'
-            },
-            table:NSServerContact,
-            assocTable:NSServerUserContact
-        },
-        'ContactStep': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> contact_step entry [contactstep_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> contact_step entry [contactstep_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> contact_step entry [contactstep_uuid] for user [userUUID]'
-            },
-            table:NSServerContactStep,
-            assocTable:null
-        },
-        'ContactTag': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> contact_tag entry [contacttag_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> contact_tag entry [contacttag_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> contact_tag entry [contacttag_uuid] for user [userUUID]'
-            },
-            table:NSServerContactTag,
-            assocTable:null
-        },
-        'Group': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> group entry [group_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> group entry [group_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> group entry [group_uuid] for user [userUUID]'
-            },
-            table:NSServerGroup,
-            assocTable:NSServerUserGroup
-        },
-        'Step': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> step entry [step_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> step entry [step_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> step entry [step_uuid] for user [userUUID]'
-            },
-            table:NSServerSteps,
-            assocTable:NSServerUserSteps
-        },
-        'Tag': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> tag entry [tag_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> tag entry [tag_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> tag entry [tag_uuid] for user [userUUID]'
-            },
-            table:NSServerTag,
-            assocTable:NSServerUserTag
-        }
+ // NOTE: this map requires Models to be defined first, so our bootstrap.js routine
+ // will call the DBHelper.setupMap() which assigns the values.
+var mapModelToTransaction = {};
 
-};
 
 
 
 module.exports = {
 
+    setupMap: function() {
+
+
+        mapModelToTransaction = {
+            'Campus': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> campus entry [campus_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> campus entry [campus_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> campus entry [campus_uuid] for user [userUUID]'
+                },
+                table:NSServerCampus,
+                assocTable:NSServerUserCampus
+            },
+            'Contact': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> contact entry [contact_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> contact entry [contact_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> contact entry [contact_uuid] for user [userUUID]'
+                },
+                table:NSServerContact,
+                assocTable:NSServerUserContact
+            },
+            'ContactStep': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> contact_step entry [contactstep_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> contact_step entry [contactstep_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> contact_step entry [contactstep_uuid] for user [userUUID]'
+                },
+                table:NSServerContactStep,
+                assocTable:null
+            },
+            'ContactTag': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> contact_tag entry [contacttag_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> contact_tag entry [contacttag_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> contact_tag entry [contacttag_uuid] for user [userUUID]'
+                },
+                table:NSServerContactTag,
+                assocTable:null
+            },
+            'Group': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> group entry [group_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> group entry [group_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> group entry [group_uuid] for user [userUUID]'
+                },
+                table:NSServerGroup,
+                assocTable:NSServerUserGroup
+            },
+            'Step': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> step entry [step_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> step entry [step_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> step entry [step_uuid] for user [userUUID]'
+                },
+                table:NSServerSteps,
+                assocTable:NSServerUserSteps
+            },
+            'Tag': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> tag entry [tag_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> tag entry [tag_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> tag entry [tag_uuid] for user [userUUID]'
+                },
+                table:NSServerTag,
+                assocTable:NSServerUserTag
+            }
+
+        };
+
+    },
 
     manyThrough: function(modelA, AFilter, modelB, keyAB, keyB, filter, cb) {
         var dfd = $.Deferred();
