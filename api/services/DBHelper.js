@@ -105,12 +105,19 @@ module.exports = {
 
     },
 
+
+
     manyThrough: function(modelA, AFilter, modelB, keyAB, keyB, filter, cb) {
         var dfd = $.Deferred();
 
         filter = filter || {};
 
         modelA.find(AFilter)
+        .fail(function(err){
+            AD.log.error("DBHelper.manyThrough() err: ",err);
+            if (cb) cb(err);
+            dfd.reject(err);
+        })
         .then(function(list){
             var ids = [];
             for (var i=0; i<list.length; i++) {
@@ -129,6 +136,11 @@ module.exports = {
 //console.log(filter);
 
                 modelB.find(filter)
+                .fail(function(err){
+                    AD.log.error("DBHelper.manyThrough().modelB.find() err: ",err);
+                    if (cb) cb(err);
+                    dfd.reject(err);
+                })
                 .then(function(listCampuses){
 
 
@@ -142,17 +154,8 @@ module.exports = {
                     if (cb) cb(null, listCampuses);
                     dfd.resolve(listCampuses);
 
-                })
-                .fail(function(err){
-                    if (cb) cb(err);
-                    dfd.reject(err);
                 });
             }
-        })
-        .fail(function(err){
-            AD.log.error("DBHelper.manyThrough() err: ",err);
-            if (cb) cb(err);
-            dfd.reject(err);
         });
 
         return dfd;
