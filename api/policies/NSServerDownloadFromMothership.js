@@ -117,7 +117,7 @@ var updateCampus = function(opts) {
 
 var createCampus = function(opts) {
 //    var dfd = $.Deferred();
-
+AD.log('createCampus()');
     var req = opts.req;
     var gmaId = opts.gmaId;
     var name = opts.name;
@@ -158,19 +158,21 @@ var processNode = function(opts){
     var gmaId = opts.id;
     var name = opts.name;
 
-    console.log('  - looking for a campus for assignment '+gmaId);
+    AD.log('  - looking for a campus for assignment '+gmaId);
 
     NSServerCampus.findOne({
         node_id: gmaId
     })
     .fail(function(err){
+//AD.log('campus.findOne().error():')
         dfd.reject(err);
     })
     .then(function(campus){
+//AD.log('campus found:', campus);
 
         if (campus){
             // Update the campus
-            console.log('    - found campus for assignment '+gmaId);
+            AD.log('    - found campus for assignment '+gmaId);
             updateCampus({
                 req:req,
                 campus:campus,

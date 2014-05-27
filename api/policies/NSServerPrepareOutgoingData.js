@@ -56,7 +56,7 @@ module.exports = function(req, res, next) {
         }
         else {
             AD.log('  - client transactions:');
-//            console.log(data);
+            console.log(data);
             req.appdev.transactionLog = data;
             next();
         }
