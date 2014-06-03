@@ -26,5 +26,9 @@
     "gma-api": "git://github.com/appdevdesigns/gma-api",
     "async": "^0.6.2",
     "jquery-deferred": "^0.3.0"
+  },
+  "devDependencies": {
+    "chai": "^1.9.1",
+    "mocha": "^1.20.0"
   }
 }
