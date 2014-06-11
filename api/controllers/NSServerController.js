@@ -32,14 +32,24 @@ module.exports = {
       AD.log();
       AD.log('cas baseuri:'+ CAS.baseURI());
 
-    // Send a JSON response
-    return res.json({
-      status: 'pong',
-      "CAS": {
-          uri:CAS.baseURI(),
-          authURI:sails.config.appdev.authURI
-      }
-    });
+      // make sure uriAuth begins with a '/'
+      var uriAuth = sails.config.appdev.authURI;
+      uriAuth = '/' + uriAuth;
+      uriAuth = uriAuth.replace('//', '/');
+
+      // Send a JSON response
+      return res.json({
+          status: 'pong',
+          "CAS": {
+              uri:CAS.baseURI(),
+              authURI:sails.config.appdev.authURI
+          },
+          uris:{
+              'sync': '/nsserver/sync',
+              'auth': uriAuth
+          }
+
+      });
   },
 
 
@@ -69,7 +79,7 @@ module.exports = {
 
       AD.log();
       AD.log('<green><bold>SYNC:</bold></green><yellow><bold>Complete!</bold></yellow>');
-      AD.log(' ==> lastSyncTimestamp:'+lastSyncTimestamp);
+      AD.log('  ==> lastSyncTimestamp:'+lastSyncTimestamp);
 
       ADCore.comm.success(res, {
           "lastSyncTimestamp": lastSyncTimestamp,

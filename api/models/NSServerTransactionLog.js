@@ -8,6 +8,8 @@
 
 module.exports = {
 
+    connection: ['nextStepsServer'],
+
     tableName: 'nextsteps_transaction_log',
 
     attributes: {
@@ -33,16 +35,18 @@ module.exports = {
             console.log('Error: NSServerTransactionLog::getLogForUser - no callback provided')
             return;
         }
-        NSServerTransactionLog.find({user_uuid:userId}).where({updatedAt:{'>=':timestamp}})
+
+        // Grab all the transactions that have happened AFTER the given timestamp
+        NSServerTransactionLog.find({user_uuid:userId}).where({updatedAt:{'>':timestamp}})
+        .fail(function(err){
+            cb(err);
+        })
         .then(function (logObjs){
             var userLog = []; // returned list of transactions for a user.
             for (var t = 0; t < logObjs.length; t++) {
                 userLog.push(logObjs[t].transaction);
             }
             cb(null, userLog);
-        })
-        .fail(function(err){
-            cb(err);
         });            
     }
 

@@ -8,6 +8,8 @@
 
 module.exports = {
 
+    connection: ['nextStepsServer'],
+
     tableName : 'nextsteps_group',
 
     attributes: {

@@ -8,7 +8,7 @@
 var $ = require('jquery-deferred');
 var GMA = require('gma-api');
 var async = require('async');
-
+var AD = require('ad-utils');
 
 var TestMap = {
 };
@@ -54,7 +54,7 @@ module.exports = {
 
                     var userID = req.param('username');
                     var password = req.param('password');
-                    loginGMA(userID, password)
+                    loginGMA(userID, password, req.connection.remoteAddress)
                     .fail(function(err){
                         next(err);
                     })
@@ -115,6 +115,7 @@ module.exports = {
                 var data = results.pop();  // <-- data from last step
 
                 for (var id in data.measurements) {
+
                     var newMeasurementList = [];
                     var currList = data.measurements[id];
                     currList.forEach(function(measurement){
@@ -255,7 +256,7 @@ module.exports = {
         var userID = req.param('username');
         var password = req.param('password');
 
-        loginGMA(userID, password)
+        loginGMA(userID, password, req.connection.remoteAddress)
         .fail(function(err){
             if (cb) cb(err);
             dfd.reject(err);
@@ -306,7 +307,7 @@ module.exports = {
  * @param string password
  * @return jQuery Deferred
  */
-var loginGMA = function(username, password) {
+var loginGMA = function(username, password, remoteIP) {
     var dfd = $.Deferred();
 
 //console.log();
@@ -314,10 +315,13 @@ var loginGMA = function(username, password) {
 //console.log('username:'+username);
 //console.log('password:'+password);
 //console.log();
+    remoteIP = remoteIP || '10.0.0.1';
 
     var gma = new GMA({
         gmaBase: sails.config.nsserver.gmaBaseURL,
-        casURL: sails.config.nsserver.casURL
+        casURL: sails.config.nsserver.casURL,
+        forwardedFor:remoteIP // strange case where GMA is on same server as
+                              // nextsteps we need to set this
     });
 
     gma.login(username, password)

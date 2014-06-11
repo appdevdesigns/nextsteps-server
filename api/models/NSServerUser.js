@@ -5,9 +5,11 @@
  * @description :: A list of users associating the user's NextSteps UUID with CAS GUID.
  * @docs		:: http://sailsjs.org/#!documentation/models
  */
-var $ = require('jquery-deferred');
+var AD = require('ad-utils');
 
 module.exports = {
+
+    connection: ['nextStepsServer'],
 
     tableName: 'nextsteps_user',
 
@@ -25,7 +27,7 @@ module.exports = {
 
         campuses: function(filter, cb) {
 
-            var dfd = $.Deferred();
+            var dfd = AD.sal.Deferred();
 
             if (typeof cb == 'undefined') {
                 if (typeof filter == 'function') {
@@ -69,7 +71,7 @@ module.exports = {
 
 
         addCampus: function(campusObj, cb) {
-            var dfd = $.Deferred();
+            var dfd = AD.sal.Deferred();
             NSServerUserCampus.create({
                 campus_uuid: campusObj.campus_uuid,
                 user_uuid: this.user_uuid
@@ -94,7 +96,7 @@ module.exports = {
 
 
     addCampus: function(campusObj, cb) {
-        var dfd = $.Deferred();
+        var dfd = AD.sal.Deferred();
         NSServerUserCampus.create({
             campus_uuid: campusObj.campus_uuid,
             user_uuid: this.user_uuid
@@ -117,7 +119,7 @@ module.exports = {
 
 
     addTransaction: function(transaction, cb) {
-        var dfd = $.Deferred();
+        var dfd = AD.sal.Deferred();
         NSServerTransactionLog.create({
             user_uuid: this.user_uuid,
             transaction: transaction

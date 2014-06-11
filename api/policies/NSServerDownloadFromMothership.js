@@ -35,7 +35,7 @@ module.exports = function(req, res, next) {
             ADCore.comm.error(res, err);
         })
         .then(function( data ){
-
+//AD.log(' returned data: ',data);
             // External data retrieved; now make sure we're in sync
             syncAssignments({
                 req:req,
@@ -117,7 +117,7 @@ var updateCampus = function(opts) {
 
 var createCampus = function(opts) {
 //    var dfd = $.Deferred();
-
+AD.log('createCampus()');
     var req = opts.req;
     var gmaId = opts.gmaId;
     var name = opts.name;
@@ -158,19 +158,21 @@ var processNode = function(opts){
     var gmaId = opts.id;
     var name = opts.name;
 
-    console.log('  - looking for a campus for assignment '+gmaId);
+    AD.log('  - looking for a campus for assignment '+gmaId);
 
     NSServerCampus.findOne({
         node_id: gmaId
     })
     .fail(function(err){
+//AD.log('campus.findOne().error():')
         dfd.reject(err);
     })
     .then(function(campus){
+//AD.log('campus found:', campus);
 
         if (campus){
             // Update the campus
-            console.log('    - found campus for assignment '+gmaId);
+            AD.log('    - found campus for assignment '+gmaId);
             updateCampus({
                 req:req,
                 campus:campus,
@@ -566,6 +568,7 @@ var processMeasurement = function(opts) {
     })
     .then(function(step){
         if (step){
+
             // Update the step
             updateStep({
                 req:req,
@@ -578,7 +581,9 @@ var processMeasurement = function(opts) {
             .then(function(){
                 dfd.resolve();
             });
+
         } else {
+
             // Create the step
             createStep({
                 req:req,
@@ -618,31 +623,49 @@ var processNodeMeasurements = function(opts) {
             dfd.reject(err);
         })
         .then(function(campus){
+
+            // if we found a campus
             if (campus){
                 var numDone = 0;
-                var numToDo = 0;
 
-                for (var id in measurements){
-                    processMeasurement({
-                        req:req,
-                        campusUUID:campus.campus_uuid,
-                        measurement:measurements[id]
-                    })
-                    .fail(function(err){
-                        dfd.reject(err);
-                    })
-                    .then(function(){
-                        numDone++;
-                        if (numDone == numToDo){
-//AD.log('   - all measurements processed');
-                            dfd.resolve();
-                        }
-                    });
-                    numToDo++;
+
+                //// NOTE: you may be tempted to simply fire off a bunch of 
+                //// db transactions in parallel here ... but don't!
+                //// the order of the measurements being saved in the table
+                //// is important.  make sure one completes before the other
+                //// starts.
+
+                // this recursive fn() will process each element in the []
+                // in series until it reaches the end.
+                var processIt = function(indx) {
+
+                    // if we are done then resolve()
+                    if (indx >= measurements.length) {
+
+                        dfd.resolve();
+
+                    } else {
+
+                        processMeasurement({
+                            req:req,
+                            campusUUID:campus.campus_uuid,
+                            measurement:measurements[indx]
+                        })
+                        .fail(function(err){
+                            dfd.reject(err);
+                        })
+                        .then(function(){
+                            
+                            // now do the next one
+                            processIt(indx+1);
+                        });
+                    }
                 }
-                if (numToDo == 0) {
-                    dfd.resolve();
-                }
+
+                // start with the 1st element:
+                processIt(0);
+
+
             } else {
                 dfd.resolve();
             }
@@ -651,8 +674,8 @@ var processNodeMeasurements = function(opts) {
     } else {
 
         // there were no measurements assigned to this nodeID ... why?
-        console.log(' there were no measurements assigned to nodeID['+nodeId+']');
-        console.log('   ==> that doesn\'t seem like expected behavior!');
+        AD.log('<yellow><bold>WARN:</bold></yellow> there were no measurements assigned to nodeID['+nodeId+']');
+        AD.log('   ==> that doesn\'t seem like expected behavior!');
 
         dfd.resolve();
     }
