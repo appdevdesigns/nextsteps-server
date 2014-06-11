@@ -8,7 +8,7 @@
 var $ = require('jquery-deferred');
 var GMA = require('gma-api');
 var async = require('async');
-
+var AD = require('ad-utils');
 
 var TestMap = {
 };
@@ -115,6 +115,7 @@ module.exports = {
                 var data = results.pop();  // <-- data from last step
 
                 for (var id in data.measurements) {
+
                     var newMeasurementList = [];
                     var currList = data.measurements[id];
                     currList.forEach(function(measurement){

@@ -7,6 +7,8 @@
  */
 
 module.exports = {
+
+	connection: ['nextStepsServer'],
         
     tableName : 'nextstep_user_year',
 

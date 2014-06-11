@@ -7,6 +7,8 @@
  *
  */
 
+var AD = require('ad-utils');
+
 ////Request format:
 //{
 //    "lastSyncTimestamp": 1234567890,
@@ -40,12 +42,12 @@
 
 module.exports = function(req, res, next) {
 
-    console.log('preparing outgoing data ...');
+    AD.log('<green><bold>preparing outgoing data ...</bold></green>');
     var lastTime = new Date(parseInt(req.param('lastSyncTimestamp'), 10));
     var userId = req.appdev.userUUID;
 
-    console.log('  - userId['+userId+']');
-    console.log('  - lastTime['+req.param('lastSyncTimestamp')+'] -> DateTime['+lastTime+']');
+    AD.log('<green>  - userId[<bold>'+userId+'</bold>]</green>');
+    AD.log('<green>  - lastTime[<yellow><bold>'+req.param('lastSyncTimestamp')+'</bold></yellow>] -> DateTime['+lastTime+'] </green>');
 
     NSServerTransactionLog.getLogForUser(userId, lastTime, function(err, data){
         if (err) {
@@ -53,8 +55,8 @@ module.exports = function(req, res, next) {
             ADCore.comm.error(res, 'Failed to obtain transaction log, ' + err);
         }
         else {
-            console.log('  - client transactions:');
-//            console.log(data);
+            AD.log('  - client transactions:');
+            console.log(data);
             req.appdev.transactionLog = data;
             next();
         }

@@ -16,8 +16,8 @@ module.exports = {
 
     'nextsteps-server/NSServerController': {
         ping: [],
-        auth: ['isAuthenticatedService'],
-        sync: ['isAuthenticatedService',   // should be: 'isAuthenticatedService',
+        auth: ['sessionAuth'],
+        sync: ['sessionAuth',  
                'initUser',
                'NSServerDevelopTools',
                'NSServerValidateUser',
@@ -26,7 +26,7 @@ module.exports = {
                'NSServerProcessClientData',
                'NSServerUploadToMothership'
                ],
-       logout:true
+        logout:true
     }
 
 

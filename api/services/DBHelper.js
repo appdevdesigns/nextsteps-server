@@ -24,76 +24,87 @@ var AD = require('ad-utils');
  * 'CampusStep':{}
  * ...
  */
-var mapModelToTransaction = {
-        'Campus': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> campus entry [campus_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> campus entry [campus_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> campus entry [campus_uuid] for user [userUUID]'
-            },
-            table:NSServerCampus,
-            assocTable:NSServerUserCampus
-        },
-        'Contact': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> contact entry [contact_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> contact entry [contact_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> contact entry [contact_uuid] for user [userUUID]'
-            },
-            table:NSServerContact,
-            assocTable:NSServerUserContact
-        },
-        'ContactStep': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> contact_step entry [contactstep_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> contact_step entry [contactstep_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> contact_step entry [contactstep_uuid] for user [userUUID]'
-            },
-            table:NSServerContactStep,
-            assocTable:null
-        },
-        'ContactTag': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> contact_tag entry [contacttag_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> contact_tag entry [contacttag_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> contact_tag entry [contacttag_uuid] for user [userUUID]'
-            },
-            table:NSServerContactTag,
-            assocTable:null
-        },
-        'Group': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> group entry [group_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> group entry [group_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> group entry [group_uuid] for user [userUUID]'
-            },
-            table:NSServerGroup,
-            assocTable:NSServerUserGroup
-        },
-        'Step': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> step entry [step_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> step entry [step_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> step entry [step_uuid] for user [userUUID]'
-            },
-            table:NSServerSteps,
-            assocTable:NSServerUserSteps
-        },
-        'Tag': {
-            logs:{
-                'create':'<green><bold>created:</bold></green> tag entry [tag_uuid] for user [userUUID]',
-                'update':'<green><bold>updated:</bold></green> tag entry [tag_uuid] ',
-                'destroy':'<green><bold>deleted:</bold></green> tag entry [tag_uuid] for user [userUUID]'
-            },
-            table:NSServerTag,
-            assocTable:NSServerUserTag
-        }
+ // NOTE: this map requires Models to be defined first, so our bootstrap.js routine
+ // will call the DBHelper.setupMap() which assigns the values.
+var mapModelToTransaction = {};
 
-};
 
 
 
 module.exports = {
+
+    setupMap: function() {
+
+
+        mapModelToTransaction = {
+            'Campus': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> campus entry [campus_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> campus entry [campus_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> campus entry [campus_uuid] for user [userUUID]'
+                },
+                table:NSServerCampus,
+                assocTable:NSServerUserCampus
+            },
+            'Contact': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> contact entry [contact_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> contact entry [contact_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> contact entry [contact_uuid] for user [userUUID]'
+                },
+                table:NSServerContact,
+                assocTable:NSServerUserContact
+            },
+            'ContactStep': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> contact_step entry [contactstep_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> contact_step entry [contactstep_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> contact_step entry [contactstep_uuid] for user [userUUID]'
+                },
+                table:NSServerContactStep,
+                assocTable:null
+            },
+            'ContactTag': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> contact_tag entry [contacttag_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> contact_tag entry [contacttag_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> contact_tag entry [contacttag_uuid] for user [userUUID]'
+                },
+                table:NSServerContactTag,
+                assocTable:null
+            },
+            'Group': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> group entry [group_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> group entry [group_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> group entry [group_uuid] for user [userUUID]'
+                },
+                table:NSServerGroup,
+                assocTable:NSServerUserGroup
+            },
+            'Step': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> step entry [step_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> step entry [step_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> step entry [step_uuid] for user [userUUID]'
+                },
+                table:NSServerSteps,
+                assocTable:NSServerUserSteps
+            },
+            'Tag': {
+                logs:{
+                    'create':'<green><bold>created:</bold></green> tag entry [tag_uuid] for user [userUUID]',
+                    'update':'<green><bold>updated:</bold></green> tag entry [tag_uuid] ',
+                    'destroy':'<green><bold>deleted:</bold></green> tag entry [tag_uuid] for user [userUUID]'
+                },
+                table:NSServerTag,
+                assocTable:NSServerUserTag
+            }
+
+        };
+
+    },
+
 
 
     manyThrough: function(modelA, AFilter, modelB, keyAB, keyB, filter, cb) {
@@ -102,6 +113,11 @@ module.exports = {
         filter = filter || {};
 
         modelA.find(AFilter)
+        .fail(function(err){
+            AD.log.error("DBHelper.manyThrough() err: ",err);
+            if (cb) cb(err);
+            dfd.reject(err);
+        })
         .then(function(list){
             var ids = [];
             for (var i=0; i<list.length; i++) {
@@ -120,6 +136,11 @@ module.exports = {
 //console.log(filter);
 
                 modelB.find(filter)
+                .fail(function(err){
+                    AD.log.error("DBHelper.manyThrough().modelB.find() err: ",err);
+                    if (cb) cb(err);
+                    dfd.reject(err);
+                })
                 .then(function(listCampuses){
 
 
@@ -133,17 +154,8 @@ module.exports = {
                     if (cb) cb(null, listCampuses);
                     dfd.resolve(listCampuses);
 
-                })
-                .fail(function(err){
-                    if (cb) cb(err);
-                    dfd.reject(err);
                 });
             }
-        })
-        .fail(function(err){
-            AD.log.error("DBHelper.manyThrough() err: ",err);
-            if (cb) cb(err);
-            dfd.reject(err);
         });
 
         return dfd;
@@ -377,7 +389,7 @@ module.exports = {
 
 
     applyMultilingualTransaction : function(opts) {
-
+//AD.log('applyMultilingualTransaction():');
         var dfd = $.Deferred();
 
         var userUUID = opts.userUUID;
@@ -489,7 +501,8 @@ module.exports = {
                                         var cond = {};
                                         cond[table.getFieldUUID()] = entry.uuid();
                                         table.destroy(cond)
-                                        .done(function(err){}); // done handler required
+                                        .fail(function(err){})
+                                        .then(function(){}); 
                                     }
 
                                     next(err);
@@ -745,154 +758,154 @@ AD.log.error('Failed to add transaction for update(), err:', err);
                         return dfd;
                     }
                     table.findOne(cond)
-                    .done(function(err, entry){
-                    if(err) {
+                    .fail(function(err){
                         AD.log.error('<bold>ERROR:</bold> error finding entry with condition:');
                         AD.log(cond);
                         AD.log('for table:');
                         AD.log(table);
                         console.log(err);
                         dfd.reject(err);
-                    } else if (undefined == entry) {
-                        // entry not found
-                        AD.log('<yellow><bold>warn:</bold></yellow> could not find entry given condition:',cond);
-                        dfd.resolve();
-                    } else {
+                    })
+                    .then(function(entry){
+                        if (undefined == entry) {
+                            // entry not found
+                            AD.log('<yellow><bold>warn:</bold></yellow> could not find entry given condition:',cond);
+                            dfd.resolve();
+                        } else {
 
-                            // Determine if entry can be destroyed
+                                // Determine if entry can be destroyed
 
-                            if (entry.userModifyRestricted) {
-                                isRestricted = entry.userModifyRestricted();
-                            }
-                            if ( !isRestricted ) {
+                                if (entry.userModifyRestricted) {
+                                    isRestricted = entry.userModifyRestricted();
+                                }
+                                if ( !isRestricted ) {
 
-                                async.series([
+                                    async.series([
 
-                                    // if there is an Association Table delete that first:
-                                    function(next) {
+                                        // if there is an Association Table delete that first:
+                                        function(next) {
 
-                                        // if we have an association table:
-                                        if (userAssocTable) {
+                                            // if we have an association table:
+                                            if (userAssocTable) {
 
-                                            // Add entry to association model
-                                            var ucParms = {user_uuid : userUUID };
-                                            ucParms[table.getFieldUUID()] = entry.uuid();
-                                            // alternatively: ucParms[table.getFieldUUID()] = params[table.getFieldUUID()];
+                                                // Add entry to association model
+                                                var ucParms = {user_uuid : userUUID };
+                                                ucParms[table.getFieldUUID()] = entry.uuid();
+                                                // alternatively: ucParms[table.getFieldUUID()] = params[table.getFieldUUID()];
 
-                                            AD.log('  - about to delete association entry');
-                                            userAssocTable.destroy(ucParms)
-                                            .done(function(err){
-                                                if (err) {
+                                                AD.log('  - about to delete association entry');
+                                                userAssocTable.destroy(ucParms)
+                                                .fail(function(err){
                                                     next(err);
-                                                } else {
+                                                })
+                                                .then(function(){
                                                     next();
-                                                }
-                                            });
+                                                });
 
-                                        } else {
+                                            } else {
 
-                                            // no?  just move along then.
-                                            next();
-                                        }
+                                                // no?  just move along then.
+                                                next();
+                                            }
 
-                                    },
+                                        },
 
 
-                                    // Normal Table: Now delete the actual entry
-                                    function(next) {
+                                        // Normal Table: Now delete the actual entry
+                                        function(next) {
 
-                                        // if this is a normal table
-                                        if (!DBHelper.isMultilingualTable(table)) {
-//                                             AD.log('  - about to delete entry');
+                                            // if this is a normal table
+                                            if (!DBHelper.isMultilingualTable(table)) {
+    //                                             AD.log('  - about to delete entry');
 
-                                            table.destroy(cond)
+                                                table.destroy(cond)
+                                                .fail(function(err){
+                                                    AD.log.error('<bold>Error:</bold> destroying entry failed!', cond, err);
+                                                    console.log(err);
+                                                    next(err);
+                                                })
+                                                .then(function(){
+
+                                                    // did it!
+                                                    AD.log(AD.util.string.render(optsLog, entry));
+                                                    next();
+                                                });
+
+                                            } else {
+                                                next();
+                                            }
+
+                                        },
+
+
+                                        // Multilingual Table: Now delete the actual entry
+                                        function(next) {
+
+                                            // if this is a multilingual table
+                                            // multilingual tables have a .getTransModel()
+                                            if ( DBHelper.isMultilingualTable(table) ) {
+
+                                                AD.log('  - about to delete entry');
+                                                DBHelper.multilingualDestroy(table, cond, table.getFieldTransFK())
+                                                .fail(function(err){
+                                                    AD.log.error('<bold>Error:</bold> destroying multilingual entry failed:', cond, err);
+                                                    console.log(err);
+                                                    next(err);
+                                                })
+                                                .then(function(){
+
+                                                    // did it!
+                                                    AD.log(AD.util.string.render(optsLog, entry));
+                                                    next();
+
+                                                });
+                                            } else {
+                                                next();
+                                            }
+
+                                        },
+
+
+                                        // ok, now make an entry in the transaction log for the user
+                                        function(next) {
+
+                                            DBHelper.addTransaction({
+                                                operation:'destroy',
+                                                obj:entry,
+                                                user:user
+                                            })
                                             .fail(function(err){
-                                                AD.log.error('<bold>Error:</bold> destroying entry failed!', cond, err);
-                                                console.log(err);
                                                 next(err);
                                             })
                                             .then(function(){
-
-                                                // did it!
-                                                AD.log(AD.util.string.render(optsLog, entry));
                                                 next();
                                             });
 
-                                        } else {
-                                            next();
                                         }
+                                        ], function(err, results) {
 
-                                    },
+                                            if (err) {
 
+                                                AD.log.error('<bold>ERROR:</bold> problem processing this delete transaction');
+                                                AD.log(params);
+                                                dfd.reject(err);
 
-                                    // Multilingual Table: Now delete the actual entry
-                                    function(next) {
+                                            } else {
 
-                                        // if this is a multilingual table
-                                        // multilingual tables have a .getTransModel()
-                                        if ( DBHelper.isMultilingualTable(table) ) {
-
-                                            AD.log('  - about to delete entry');
-                                            DBHelper.multilingualDestroy(table, cond, table.getFieldTransFK())
-                                            .fail(function(err){
-                                                AD.log.error('<bold>Error:</bold> destroying multilingual entry failed:', cond, err);
-                                                console.log(err);
-                                                next(err);
-                                            })
-                                            .then(function(){
-
-                                                // did it!
-                                                AD.log(AD.util.string.render(optsLog, entry));
-                                                next();
-
-                                            });
-                                        } else {
-                                            next();
-                                        }
-
-                                    },
-
-
-                                    // ok, now make an entry in the transaction log for the user
-                                    function(next) {
-
-                                        DBHelper.addTransaction({
-                                            operation:'destroy',
-                                            obj:entry,
-                                            user:user
-                                        })
-                                        .fail(function(err){
-                                            next(err);
-                                        })
-                                        .then(function(){
-                                            next();
+                                                AD.log('  - destroy transaction completed.');
+                                                dfd.resolve();
+                                            }
                                         });
 
-                                    }
-                                    ], function(err, results) {
 
-                                        if (err) {
+                                } else {  // isRestricted
 
-                                            AD.log.error('<bold>ERROR:</bold> problem processing this delete transaction');
-                                            AD.log(params);
-                                            dfd.reject(err);
+                                    AD.log('<yellow><bold>warn:</bold></yellow> Failed to delete entry: permission denied');
+                                    AD.log(entry);
+                                    dfd.resolve(); // Continue processing transaction log
+                                }
 
-                                        } else {
-
-                                            AD.log('  - destroy transaction completed.');
-                                            dfd.resolve();
-                                        }
-                                    });
-
-
-                            } else {  // isRestricted
-
-                                AD.log('<yellow><bold>warn:</bold></yellow> Failed to delete entry: permission denied');
-                                AD.log(entry);
-                                dfd.resolve(); // Continue processing transaction log
-                            }
-
-                        }  // if valid entry
+                            }  // if valid entry
 
                     });  // table.findOne().done();
                     break; // destroy
@@ -929,22 +942,22 @@ AD.log.error('Failed to add transaction for update(), err:', err);
 
 
 
-     /**
-      * Function to create an entry in the primary and translation tables for a model.
-      * @param model - model definition for primary table, e.g. NSServerCampus
-      * @param params - parameters for new entry (JSON object)
-      * @return jquery deferred object
-      */
-     multilingualCreate : function(model, params) {
+    /**
+     * Function to create an entry in the primary and translation tables for a model.
+     * @param model - model definition for primary table, e.g. NSServerCampus
+     * @param params - parameters for new entry (JSON object)
+     * @return jquery deferred object
+     */
+    multilingualCreate : function(model, params) {
 
-         var dfd = $.Deferred();
+        var dfd = $.Deferred();
 
-         var modelTrans = null;
-         if ( DBHelper.isMultilingualTable(model) ) {
-             modelTrans = model.getTransModel();
-         };
+        var modelTrans = null;
+        if ( DBHelper.isMultilingualTable(model) ) {
+            modelTrans = model.getTransModel();
+        };
 
-         var someParms = paramsMultilingualData(model, params); //{};
+        var someParms = paramsMultilingualData(model, params); //{};
 //         for (key in model.attributes) {
 //             someParms[key] = params[key];
 //         }
@@ -952,176 +965,188 @@ AD.log.error('Failed to add transaction for update(), err:', err);
 //AD.log('someParms:');
 //AD.log(someParms);
 
-         model.create(someParms)
-         .done(function(err, entry){
-             if (!err) {
-                 if (! modelTrans) {
+        model.create(someParms)
+        .fail(function(err){
+            dfd.reject(err);
+        })
+        .then(function( entry){
 
-                     AD.log('<yellow><bold>warn:</bold></yellow> no getTransModel() found on model');
-                     console.log(model);
-                     // No translation model, we're done
-                     dfd.resolve(entry); // Return entry
+                if (! modelTrans) {
 
-                 } else {
-                     // Gather translation parameters and create entry in translation model
-                     var transParms = paramsMultilingualTrans(model, params); //{};
+                    AD.log('<yellow><bold>warn:</bold></yellow> no getTransModel() found on model');
+                    console.log(model);
+                    // No translation model, we're done
+                    dfd.resolve(entry); // Return entry
 
-                     //entry.addTranslation(transParms)
-                     DBHelper.addTranslation(entry, transParms)
-                     .then(function(){
-//AD.log('    - entry.addTranslation().then()');
-                         dfd.resolve(entry); // Return entry
+                } else {
+                    // Gather translation parameters and create entry in translation model
+                    var transParms = paramsMultilingualTrans(model, params); //{};
 
-                     })
-                     .fail(function(err){
+                    //entry.addTranslation(transParms)
+                    DBHelper.addTranslation(entry, transParms)
+                    .fail(function(err){
 //AD.log('    - entry.addTranslation().fail()');
-                         // Failed to create entry in translation model
-                         // Need to destroy entry in primary model, ignore return value
-                         model.destroy({id : entry.id})
-                         .done(function(err) {}); // .done required
-                         dfd.reject(err);
-                     });
+                        // Failed to create entry in translation model
+                        // Need to destroy entry in primary model, ignore return value
+                        model.destroy({id : entry.id})
+                        .fail(function(err){})
+                        .then(function(err) {}); 
+                        dfd.reject(err);
+                    })
+                    .then(function(){
+//AD.log('    - entry.addTranslation().then()');
+                        dfd.resolve(entry); // Return entry
 
-                  }
-             } else {
-                 dfd.reject(err);
-             }
-          });
+                    });
 
-         return dfd;
-     },
+                }
+          
+        });
 
-
-
-     /**
-      * Function to destroy an entry in the primary table and all entries in the associated
-      * translation table for a model.
-      * @param model - model definition for primary table, e.g. NSServerCampus
-      * @param params - parameters used to identify entry in primary table (JSON object)
-      * @param field - field name used to associate the translation table to primary table.
-      * @return jquery deferred object
-      */
-     // TODO: refactor this so we don't need the field parameter
-     multilingualDestroy : function(model, params, field){
-
-         var dfd = $.Deferred();
-
-         var modelTrans = null;
-         if ( DBHelper.isMultilingualTable(model) ) {
-             modelTrans = model.getTransModel();
-         };
-
-         model.findOne(params)
-         .done(function(err, entry){
-             if (!err) {
-                 var criteria = {};
-                 criteria[field] = entry.id;
-                 if(modelTrans) {
-                     modelTrans.destroy(criteria)
-                     .done(function(err){}); // ignore return status
-                 }
-                 model.destroy(params)
-                 .done(function(err){
-                     dfd.resolve(); // ignore return status
-                 });
-
-             } else {
-                 // Entry couldn't be found, equivalent to destroy so we call dfd.resolve()
-                 dfd.resolve();
-             }
-         });
-
-         return dfd;
-
-     },
+        return dfd;
+    },
 
 
 
-     /**
-      * @function multilingualUpdate
-      *
-      * Perform an update operation on a multilingual Model.
-      *
-      * @param {object} model : the Model definition of the Data model
-      * @param {object} condition : the condition of the entry to update
-      * @param {object} params : the key:value hash of the new values
-      * @return {Deferred}
-      */
-     multilingualUpdate: function (model, condition, params) {
-         var dfd = $.Deferred();
+    /**
+    * Function to destroy an entry in the primary table and all entries in the associated
+    * translation table for a model.
+    * @param model - model definition for primary table, e.g. NSServerCampus
+    * @param params - parameters used to identify entry in primary table (JSON object)
+    * @param field - field name used to associate the translation table to primary table.
+    * @return jquery deferred object
+    */
+    // TODO: refactor this so we don't need the field parameter
+    multilingualDestroy : function(model, params, field){
+
+        var dfd = $.Deferred();
+
+        var modelTrans = null;
+        if ( DBHelper.isMultilingualTable(model) ) {
+            modelTrans = model.getTransModel();
+        };
+
+        model.findOne(params)
+        .fail(function(err) {
+
+            // Entry couldn't be found, equivalent to destroy so we call dfd.resolve()
+            dfd.resolve();
+        })
+        .then(function(entry){
+
+            var criteria = {};
+            criteria[field] = entry.id;
+            if(modelTrans) {
+                modelTrans.destroy(criteria)
+                .fail(function(err){})
+                .then(function(){}); // ignore return status
+            }
+            model.destroy(params)
+            .fail(function(err){
+                dfd.resolve(); // ignore return status
+            })
+            .then(function(){ 
+                dfd.resolve();
+            });
+
+        });
+
+        return dfd;
+
+    },
+
+
+
+    /**
+     * @function multilingualUpdate
+     *
+     * Perform an update operation on a multilingual Model.
+     *
+     * @param {object} model : the Model definition of the Data model
+     * @param {object} condition : the condition of the entry to update
+     * @param {object} params : the key:value hash of the new values
+     * @return {Deferred}
+     */
+    multilingualUpdate: function (model, condition, params) {
+    var dfd = $.Deferred();
 //AD.log('   DBHelper.multilingualUpdate()');
 //AD.log('      cond:', condition);
 //AD.log('      params:', params);
 
-         // verify a language_code was provided:
-         if (params.language_code) {
+        // verify a language_code was provided:
+        if (params.language_code) {
 
-             var entry = null;
-             var dataCondition = paramsMultilingualData(model, condition, {language_code:1});
+            var entry = null;
+            var dataCondition = paramsMultilingualData(model, condition, {language_code:1});
 
-             async.series([
+            async.series([
 
-                 // step 1: get the current entry in the Data Table
-                 function(next) {
+                // step 1: get the current entry in the Data Table
+                function(next) {
 
 //AD.log('      dataCondition:', dataCondition);
 //console.log(dataCondition);
 
-                     model.findOne(dataCondition)
-                     .fail(function(err){
-                         AD.log.error('<bold>Error:</bold> finding multilingual data:()');
-                         AD.log('mode:'+model.GenModel());
-                         AD.log('dataCondition:', dataCondition);
-                         console.log(err);
-                         next(err);
-                     })
-                     .then(function(theEntry){
-                         entry = theEntry;
-                         next();
-                     });
+                    model.findOne(dataCondition)
+                    .fail(function(err){
+                        AD.log.error('<bold>Error:</bold> finding multilingual data:()');
+                        AD.log('mode:'+model.GenModel());
+                        AD.log('dataCondition:', dataCondition);
+                        console.log(err);
+                        next(err);
+                    })
+                    .then(function(theEntry){
+                        entry = theEntry;
+                        next();
+                    });
 
-                 },
+                },
 
 
-                 // step 2: now perform the update(s)
-                 function(next) {
+                // step 2: now perform the update(s)
+                function(next) {
 
-                     if (entry) {
+                    if (entry) {
 
-                         var cond = entry.uniqueCondition();
+                        var cond = entry.uniqueCondition();
 
-                         async.parallel([
+                        async.parallel([
 
-                             function(done) {
+                            function(done) {
 
-                                 // update the Data table
-                                 var dataValues = paramsMultilingualData(model, params, cond);
+                                // update the Data table
+                                var dataValues = paramsMultilingualData(model, params, cond);
 
-                                 if (!AD.util.obj.isEmpty(dataValues)) {
-                                     model.update(cond, dataValues)
-                                     .done(function(err,results){
+                                if (!AD.util.obj.isEmpty(dataValues)) {
+                                    model.update(cond, dataValues)
+                                    .fail(function(err){
+                                        done(err);
+                                    })
+                                    .then(function(results){
+                                        done();
+                                    });
+                                } else {
+                                    done();
+                                }
+                            },
 
-                                         done(err);
-                                     });
-                                 } else {
-                                     done();
-                                 }
-                             },
-
-                             function(done) {
-                                 // update the multilingual table
-                                 var transValues = paramsMultilingualTrans(model, params);
-                                 var transCondition = { language_code : params.language_code };
-                                 transCondition[model.getFieldTransFK()] = entry.id;
-                                 if (!AD.util.obj.isEmpty(transValues)) {
-                                     model.getTransModel().update(transCondition, transValues)
-                                     .done(function(err, results) {
-                                         done(err, results);
-                                     });
-                                 } else {
-                                     done();
-                                 }
-                             }
+                            function(done) {
+                                // update the multilingual table
+                                var transValues = paramsMultilingualTrans(model, params);
+                                var transCondition = { language_code : params.language_code };
+                                transCondition[model.getFieldTransFK()] = entry.id;
+                                if (!AD.util.obj.isEmpty(transValues)) {
+                                    model.getTransModel().update(transCondition, transValues)
+                                    .fail(function(err){
+                                        done(err);
+                                    })
+                                    .then(function(results) {
+                                        done(results);
+                                    });
+                                } else {
+                                    done();
+                                }
+                            }
 
                          ], function(err, results) {
 

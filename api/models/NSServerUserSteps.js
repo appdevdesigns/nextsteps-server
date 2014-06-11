@@ -6,9 +6,11 @@
  *                 in this model.
  * @docs		:: http://sailsjs.org/#!documentation/models
  */
-var $ = require('jquery-deferred');
+//var AD = require('ad-utils');
 
 module.exports = {
+
+	connection: ['nextStepsServer'],
 
     tableName: 'nextsteps_user_steps',
 
@@ -23,7 +25,7 @@ module.exports = {
 
 //    // Returns a user object related to this instance
 //    user: function(cb) {
-//        var dfd = $.Deferred();
+//        var dfd = AD.sal.Deferred();
 //        NSServerUser.findOne({
 //            user_uuid: this.user_uuid
 //        })

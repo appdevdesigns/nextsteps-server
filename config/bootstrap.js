@@ -10,6 +10,8 @@
 
 module.exports = function (cb) {
 
+	DBHelper.setupMap();
+	
     cb();       // successful response
     // cb(err);   // in case of an unrecoverable error
 };
