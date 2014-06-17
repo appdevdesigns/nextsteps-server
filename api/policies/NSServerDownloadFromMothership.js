@@ -99,6 +99,7 @@ var updateCampus = function(opts) {
                 if (err){
                     dfd.reject(err);
                 } else {
+//// TODO:  do we need to add transaction logs here for each user associated with this campus to be updated of this change?
                     dfd.resolve();
                 }
             });
@@ -250,8 +251,12 @@ var addUserToCampus = function(userUUID, campus) {
         dfd.reject(err);
     })
     .then(function(userCampus){
+
+        // if they didn't have an entry then create one
         if (!userCampus){
+            
             AD.log('    <green><bold>adding:</bold></green> user to campus/assignment '+campus.node_id);
+            
             // Need to create one
             NSServerUserCampus.create({
                 user_uuid: userUUID,
@@ -260,8 +265,178 @@ var addUserToCampus = function(userUUID, campus) {
             .fail(function(err){
                 dfd.reject(err);
             })
-            .then(function(){
-                dfd.resolve();
+            .then(function( entry ){
+
+                // so we've created a new entry for ourselves, but now we need 
+                // to update the transaction logs
+                var user = null;
+                var measurements = null;
+
+                async.series([
+
+                    // 1) get the user Object
+                    function(next) {
+
+                        NSServerUser.findOne({user_uuid : userUUID})
+                        .fail(function(err) {
+                            AD.log.error('<bold>ERROR:</bold> .addUserToCampus() could not find user entry for user_uuid:'+userUUID);
+                            next(err);
+                        })
+                        .then(function(thisUser){
+
+                            user = thisUser;
+                            next();
+
+                        });
+
+                    },
+
+
+                    // now create a new Create Campus Transaction Log for this user:
+                    function(next) {
+
+                        DBHelper.addTransaction({
+                            operation:'create',
+                            obj:entry,
+                            user:user
+                        })
+                        .fail(function(err){
+
+                            //AD.log('Failed to add transaction log for campus  ', err);
+                            console.trace();
+                            next(err);
+                        })
+                        .then(function(){
+                            next();
+                        });
+
+                    }
+
+
+                    // now Get all the Measurements for this Campus
+                    function(next) {
+
+                        entry.steps()
+                        .fail(function(err){
+                            AD.error('<bold>ERROR:</bold> getting steps from entry:', err);
+                            next(err);
+                        })
+                        .then(function( steps ) {
+
+                            measurements = steps;
+
+                            next();
+
+                        })
+
+                    },
+
+
+                    // Now create a UserStep Entry for the measurements related to this Campus
+                    function(next) {
+
+                        // if we had measurements to process
+                        if (measurements) {
+
+
+                            // NOTE: it seems measurement order is important so 
+                            // do these sequentially in order.
+                            var addIt = function( indx ) {
+
+                                if (indx >= measurements.length) {
+                                    next();
+                                } else {
+
+                                    NSServerUserCampus.create({
+                                        user_uuid: user.user_uuid,
+                                        step_uuid: measurements[indx].step_uuid
+                                    })
+                                    .fail(function(err){
+
+                                        AD.error('<bold>ERROR:</bold> Failed to add Step log for campus  ', err);
+                                        console.trace();
+                                        next(err);
+                                    })
+                                    .then(function(){
+                                        addIt(indx+1);
+                                    });
+
+                                }
+                            }
+
+                            addIt(0);
+
+                        } else {
+
+                            // no measurements???  well just continue on... 
+                            next();
+                        }
+
+                    },
+
+
+                    // Now create a 'Create Step' Transaction Log for each measurement
+                    function(next) {
+
+                        // if we had measurements to process
+                        if (measurements) {
+
+
+                            // NOTE: it seems measurement order is important so 
+                            // do these sequentially in order.
+                            var addIt = function( indx ) {
+
+                                if (indx >= measurements.length) {
+                                    next();
+                                } else {
+
+                                    DBHelper.addTransaction({
+                                        operation:'create',
+                                        obj:measurements[indx],
+                                        user:user
+                                    })
+                                    .fail(function(err){
+
+                                        AD.error('<bold>ERROR:</bold> Failed to add Step log for campus  ', err);
+                                        console.trace();
+                                        next(err);
+                                    })
+                                    .then(function(){
+                                        addIt(indx+1);
+                                    });
+
+                                }
+                            }
+
+                            addIt(0);
+
+                        } else {
+
+                            // no measurements???  well just continue on... 
+                            next();
+                        }
+
+                    }
+
+                ], function(err, results){
+
+                    if (err) {
+                        dfd.reject(err);
+                    } else {
+                        dfd.resolve();
+                    }
+
+
+                });
+
+                
+
+
+/*
+                
+*/
+// TODO: Add CampusSteps for this User
+
             });
         } else {
             // Nothing to do
