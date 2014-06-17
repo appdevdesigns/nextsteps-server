@@ -310,7 +310,7 @@ var addUserToCampus = function(userUUID, campus) {
                             next();
                         });
 
-                    }
+                    },
 
 
                     // now Get all the Measurements for this Campus
