@@ -73,6 +73,26 @@ module.exports = {
     }, // transaction
 
 
+
+    steps:function () {
+        
+        var dfd = AD.sal.Deferred();
+
+        NSServerSteps.find({ campus_uuid: this.campus_uuid})
+        .fail(function(err){
+            AD.error('ERROR: could not get steps from campus ['+this.campus_uuid+']', err);
+            dfd.reject(err);
+        })
+        .then(function(steps){
+
+            dfd.resolve(steps);
+
+        });
+
+        return dfd;
+    },
+
+
 /*
     addTranslation: function(transEntry, cb) {
         var dfd = $.Deferred();
