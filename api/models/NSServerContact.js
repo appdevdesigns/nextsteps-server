@@ -17,13 +17,13 @@ module.exports = {
         contact_uuid	: 'STRING',
 
 
-        contact_firstname	: 'STRING',
+        contact_firstName	: 'STRING',
 
 
-        contact_lastname	: 'STRING',
+        contact_lastName	: 'STRING',
 
 
-        contact_nickname	: 'STRING',
+        contact_nickName	: 'STRING',
 
 
         campus_uuid	: 'STRING',
@@ -184,9 +184,9 @@ module.exports = {
     getTransactionParams:function() {
         return {
             contact_uuid        : 1,
-            contact_firstname   : 1,
-            contact_lastname    : 1,
-            contact_nickname    : 1,
+            contact_firstName   : 1,
+            contact_lastName    : 1,
+            contact_nickName    : 1,
             campus_uuid         : 1,
             year_id             : 1,
             contact_phone       : 1,
