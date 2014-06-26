@@ -263,27 +263,49 @@ var addUserToCampus = function(userUUID, campus) {
                 campus_uuid: campus.campus_uuid
             })
             .fail(function(err){
+//AD.log.error('<bold>ERROR:</bold> trying to create a UserCampus entry!', err);
                 dfd.reject(err);
             })
-            .then(function( entry ){
+            .then(function( newUserCampus ){
 
                 // so we've created a new entry for ourselves, but now we need 
                 // to update the transaction logs
                 var user = null;
                 var measurements = null;
+                var entry = null;
 
                 async.series([
 
-                    // 1) get the user Object
+                    // 0) get the Campus entry
                     function(next) {
 
+                        newUserCampus.campus()
+                        .fail(function(err){
+                            next(err);
+                        })
+                        .then(function(campus){
+                            
+                            entry = campus;
+                            
+                            if (entry) {
+                                next();
+                            } else {
+                                var err = new Error(' no campus found with uuid:'+newUserCampus.campus_uuid);
+                                next(err);
+                            }
+                        });
+                    },
+
+                    // 1) get the user Object
+                    function(next) {
+//AD.log('    step 1: get User Object.');
                         NSServerUser.findOne({user_uuid : userUUID})
                         .fail(function(err) {
                             AD.log.error('<bold>ERROR:</bold> .addUserToCampus() could not find user entry for user_uuid:'+userUUID);
                             next(err);
                         })
                         .then(function(thisUser){
-
+//AD.log('    step 1:      got user:', thisUser);
                             user = thisUser;
                             next();
 
@@ -294,14 +316,14 @@ var addUserToCampus = function(userUUID, campus) {
 
                     // now create a new Create Campus Transaction Log for this user:
                     function(next) {
-
+//AD.log('    step 2: create new campus transaction log for his user.');
                         DBHelper.addTransaction({
                             operation:'create',
                             obj:entry,
                             user:user
                         })
                         .fail(function(err){
-
+//AD.log('    step 2:       Failed!!!! ', err);
                             //AD.log('Failed to add transaction log for campus  ', err);
                             console.trace();
                             next(err);
@@ -315,7 +337,7 @@ var addUserToCampus = function(userUUID, campus) {
 
                     // now Get all the Measurements for this Campus
                     function(next) {
-
+//AD.log('    step 3: getting all measurements ... ');
                         entry.steps()
                         .fail(function(err){
                             AD.error('<bold>ERROR:</bold> getting steps from entry:', err);
