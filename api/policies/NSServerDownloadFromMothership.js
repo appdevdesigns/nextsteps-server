@@ -100,6 +100,38 @@ var updateCampus = function(opts) {
                     dfd.reject(err);
                 } else {
 //// TODO:  do we need to add transaction logs here for each user associated with this campus to be updated of this change?
+//// TODO:  this would be users who have the same language_code as the update that just happened.
+////        something like:
+
+                    // NSServerUserCampus.find({campus_uuid:campus.campus_uuid})
+                    // .fail(function(err){})
+                    // .then(function(listUserCampus){
+
+                        // var arryUUIDs = [];
+                        // listUserCampus.forEach(function(userCampus){
+                        //    arryUUIDs.push(userCampus.user_uuid);
+                        //});
+
+                        // NSServerUser.find({ user_uuid:arryUUIDs})
+                        // .fail(function(){})
+                        // .then(function(users){ 
+
+
+                            // var numToDo = numDone = 0;
+                            // users.forEach(function(user){
+                                // if (user.default_lang == ADCore.user.current(req).getLanguageCode()) {
+                                    // numToDo++
+                                    // UPDATE TRANSACTION LOG()
+                                    // .then(function(){ 
+                                        // numDone++ 
+                                        // if (numDone >= numToDo) ( dfd.resolve() );
+                                    // });
+                                // }
+                            // })
+                            // if (numToDo == 0) ( dfd.resolve() );
+
+                        // })
+                    // })
                     dfd.resolve();
                 }
             });
@@ -117,14 +149,13 @@ var updateCampus = function(opts) {
 
 
 var createCampus = function(opts) {
-//    var dfd = $.Deferred();
-AD.log('createCampus()');
+
     var req = opts.req;
     var gmaId = opts.gmaId;
     var name = opts.name;
 
     var uuid = AD.util.uuid();
-    var log = '    <green><bold>creating:</bold></green> campus for assignment '+gmaId+'   uuid=['+uuid+']';
+    var log = '    - <green><bold>creating:</bold></green> campus for assignment '+gmaId+'   uuid=['+uuid+']';
 
     var params = {
         campus_uuid: uuid,
@@ -173,7 +204,7 @@ var processNode = function(opts){
 
         if (campus){
             // Update the campus
-            AD.log('    - found campus for assignment '+gmaId);
+            AD.log('    - <yellow><bold>found</bold></yellow> campus for assignment '+gmaId);
             updateCampus({
                 req:req,
                 campus:campus,
@@ -252,12 +283,24 @@ var addUserToCampus = function(userUUID, campus) {
     })
     .then(function(userCampus){
 
-        // if they didn't have an entry then create one
-        if (!userCampus){
+        // if they have an entry then move along
+        if (userCampus){
+
+            // Nothing to do
+            dfd.resolve();
+        
+        } else {
             
+            // if not, then there are a number of things we need to do:
+            //   - create a UserCampus Entry
+            //   - create transaction log for user:create campus
+            //   - associate user to all the Measurement/steps for this campus
+            //   - create transaction log for user:creat steps
+
+
             AD.log('    <green><bold>adding:</bold></green> user to campus/assignment '+campus.node_id);
             
-            // Need to create one
+            // Create UserCampus Entry
             NSServerUserCampus.create({
                 user_uuid: userUUID,
                 campus_uuid: campus.campus_uuid
@@ -268,7 +311,11 @@ var addUserToCampus = function(userUUID, campus) {
             })
             .then(function( newUserCampus ){
 
-                // so we've created a new entry for ourselves, but now we need 
+//AD.log(' got newUserCampus:', newUserCampus);
+
+
+
+                // so we've created a new entry for our user, but now we need 
                 // to update the transaction logs
                 var user = null;
                 var measurements = null;
@@ -276,15 +323,18 @@ var addUserToCampus = function(userUUID, campus) {
 
                 async.series([
 
-                    // 0) get the Campus entry
+                    // 1) get the Campus entry
                     function(next) {
-
+//AD.log('   step 0: get the Campus Entry:');
+//console.log(newUserCampus);
                         newUserCampus.campus()
                         .fail(function(err){
+//AD.log.error('ERROR: cant get campus from newUserCampus:',err);
                             next(err);
                         })
                         .then(function(campus){
-                            
+//AD.log('   step 0:     got new campus:', campus);
+
                             entry = campus;
                             
                             if (entry) {
@@ -296,7 +346,8 @@ var addUserToCampus = function(userUUID, campus) {
                         });
                     },
 
-                    // 1) get the user Object
+
+                    // 2) get the user Object
                     function(next) {
 //AD.log('    step 1: get User Object.');
                         NSServerUser.findOne({user_uuid : userUUID})
@@ -314,7 +365,7 @@ var addUserToCampus = function(userUUID, campus) {
                     },
 
 
-                    // now create a new Create Campus Transaction Log for this user:
+                    // 3) now create a new Create Campus Transaction Log for this user:
                     function(next) {
 //AD.log('    step 2: create new campus transaction log for his user.');
                         DBHelper.addTransaction({
@@ -335,12 +386,12 @@ var addUserToCampus = function(userUUID, campus) {
                     },
 
 
-                    // now Get all the Measurements for this Campus
+                    // 4) now Get all the Measurements for this Campus
                     function(next) {
 //AD.log('    step 3: getting all measurements ... ');
                         entry.steps()
                         .fail(function(err){
-                            AD.error('<bold>ERROR:</bold> getting steps from entry:', err);
+                            AD.log.error('<bold>ERROR:</bold> getting steps from entry:', err);
                             next(err);
                         })
                         .then(function( steps ) {
@@ -354,9 +405,9 @@ var addUserToCampus = function(userUUID, campus) {
                     },
 
 
-                    // Now create a UserStep Entry for the measurements related to this Campus
+                    // 5) Now create a UserStep Entry for the measurements related to this Campus
                     function(next) {
-
+//AD.log('    step 4: creating a UserStep for each measurement: ');
                         // if we had measurements to process
                         if (measurements) {
 
@@ -369,17 +420,18 @@ var addUserToCampus = function(userUUID, campus) {
                                     next();
                                 } else {
 
-                                    NSServerUserCampus.create({
+                                    NSServerUserSteps.create({
                                         user_uuid: user.user_uuid,
                                         step_uuid: measurements[indx].step_uuid
                                     })
                                     .fail(function(err){
 
-                                        AD.error('<bold>ERROR:</bold> Failed to add Step log for campus  ', err);
+                                        AD.log.error('<bold>ERROR:</bold> Failed to add Step log for campus  ', err);
                                         console.trace();
                                         next(err);
                                     })
-                                    .then(function(){
+                                    .then(function(newUserStep){
+//AD.log('    step 4:       UserStep created:', newUserStep);
                                         addIt(indx+1);
                                     });
 
@@ -397,7 +449,7 @@ var addUserToCampus = function(userUUID, campus) {
                     },
 
 
-                    // Now create a 'Create Step' Transaction Log for each measurement
+                    // 6) Now create a 'Create Step' Transaction Log for each measurement
                     function(next) {
 
                         // if we had measurements to process
@@ -419,7 +471,7 @@ var addUserToCampus = function(userUUID, campus) {
                                     })
                                     .fail(function(err){
 
-                                        AD.error('<bold>ERROR:</bold> Failed to add Step log for campus  ', err);
+                                        AD.log.error('<bold>ERROR:</bold> Failed to add Step log for campus  ', err);
                                         console.trace();
                                         next(err);
                                     })
@@ -448,21 +500,11 @@ var addUserToCampus = function(userUUID, campus) {
                         dfd.resolve();
                     }
 
-
                 });
 
-                
-
-
-/*
-                
-*/
-// TODO: Add CampusSteps for this User
 
             });
-        } else {
-            // Nothing to do
-            dfd.resolve();
+
         }
 
     });
@@ -529,6 +571,7 @@ var getCampusesForUser = function(userUUID) {
 };
 
 
+
 var removeUserFromNodes = function(userUUID, assignments) {
     var dfd = $.Deferred();
 
@@ -552,7 +595,7 @@ var removeUserFromNodes = function(userUUID, assignments) {
 
                     // Need to remove this node from the user
                     // since there is no assignment in GMA
-                    console.log('    - removing user from campus / assignment '+campus.node_id);
+                    AD.log('    - <green><bold>removing</bold></green> user from campus / assignment '+campus.node_id);
 
                     NSServerUserCampus.destroy({
                         user_uuid: userUUID,
@@ -595,7 +638,7 @@ var syncAssignments = function(opts) {
     var userUUID = opts.userUUID;
     var req = opts.req;
 
-    console.log('  getting assignments ... ');
+    AD.log('  getting assignments ... ');
 
     // Make sure our tables match the latest from GMA
     syncNodeData({
@@ -718,33 +761,7 @@ AD.log.error('*** Shoot! req.appdev.userUUID not defined yet.  How?!');
         assocTable:NSServerUserSteps,
         log:log
     });
-//
-//    NSServerSteps.create({
-//        step_uuid: AD.util.uuid(),
-//        campus_uuid: campusUUID,
-//        measurement_id: measurement.measurementId
-//    })
-//    .fail(function(err){
-//        AD.log.error('<bold>ERROR:</bold> creating Step:');
-//        console.log(err);
-//        dfd.reject(err);
-//    })
-//    .then(function(step){
-//
-//        step.addTranslation({
-//            language_code: ADCore.user.current(req).getLanguageCode(),
-//            step_label: measurement.measurementName,
-//            step_description: measurement.measurementDescription
-//        })
-//        .fail(function(err){
-//            dfd.reject(err);
-//        })
-//        .then(function(){
-//            AD.log('    <green><bold>created:</bold></green> new step/measurement m_id:'+measurement.measurementId+'  for campus:'+campusUUID);
-//            dfd.resolve();
-//        });
-//    });
-//    return dfd;
+
 };
 
 
@@ -883,8 +900,10 @@ var processNodeMeasurements = function(opts) {
 
 
 
-var syncMeasurementData = function(opts) {
+var syncMeasurements = function(opts) {
     var dfd = $.Deferred();
+
+    AD.log('syncing measurements ... ');
 
     var req = opts.req;
     var measurements = opts.measurements;
@@ -892,6 +911,7 @@ var syncMeasurementData = function(opts) {
     var numDone = 0;
     var numToDo = 0;
 
+    // process each given node in measurements
     for (var nodeId in measurements){
         numToDo++;
         processNodeMeasurements({
@@ -909,6 +929,8 @@ var syncMeasurementData = function(opts) {
             }
         });
     }
+
+    // if nothing to do then resolve()
     if (numToDo == 0){
         dfd.resolve();
     }
@@ -917,14 +939,14 @@ var syncMeasurementData = function(opts) {
 };
 
 
-
+/*
 var syncMeasurements = function( opts ) {
     var dfd = $.Deferred();
 
     var req = opts.req;
     var measurements = opts.measurements;
 
-    console.log('getting measurements ... ');
+    AD.log('getting measurements ... ');
 
     // Make sure our tables match the latest from GMA
     syncMeasurementData({
@@ -939,6 +961,7 @@ var syncMeasurements = function( opts ) {
     });
     return dfd;
 };
+*/
 
 
 
