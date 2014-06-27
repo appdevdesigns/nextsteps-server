@@ -5,7 +5,7 @@
  * @description :: Association model for correlating users and campuses.
  * @docs		:: http://sailsjs.org/#!documentation/models
  */
-
+var AD = require('ad-utils');
 module.exports = {
 
     connection: ['nextStepsServer'],
@@ -17,7 +17,26 @@ module.exports = {
 
         user_uuid	: 'STRING',
 
-        campus_uuid	: 'STRING'
+        campus_uuid	: 'STRING',
+
+
+        campus:function () {
+
+            var dfd = AD.sal.Deferred();
+
+            NSServerCampus.findOne({ campus_uuid: this.campus_uuid})
+            .fail(function(err){
+                AD.error('ERROR: could not get steps from campus ['+this.campus_uuid+']', err);
+                dfd.reject(err);
+            })
+            .then(function(campus){
+
+                // return what we have
+                dfd.resolve(campus);
+            });
+
+            return dfd;
+        },
 
     },
 
