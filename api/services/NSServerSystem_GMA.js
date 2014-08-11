@@ -162,7 +162,7 @@ module.exports = {
               //    ...
               // }
               function(next) {
-//console.log('   GMA.upload().uploadGatherSteps()');
+AD.log('   GMA.upload().uploadGatherSteps()');
                   uploadGatherSteps(req, next);
               },
 
@@ -172,14 +172,14 @@ module.exports = {
               //     startDate:{ reportId:{Report}, reportId2:{Report}...},
               // }
               function(next) {
-//console.log('   GMA.upload().uploadDetermineReports()');
+AD.log('   GMA.upload().uploadDetermineReports()');
                   uploadDetermineReports(req, next);
               },
 
 
               //// Step 3: Submit Reports:
               function(next) {
-//console.log('   GMA.upload().uploadSubmitReports()');
+AD.log('   GMA.upload().uploadSubmitReports()');
                               uploadSubmitReports(req, next);
               }
 
@@ -326,15 +326,15 @@ var loginGMA = function(username, password, remoteIP) {
 
     gma.login(username, password)
     .fail(function(err){
-        console.log("  *** Problem logging in to GMA server");
-        console.log("  - username:"+username);
+        AD.log.error("  *** Problem logging in to GMA server");
+        AD.log.error("  - username:"+username);
 //        console.log("  - password:"+password);
         console.log(err);
         dfd.reject(err);
     })
     .then(function(){
 
-        console.log('  - gma auth results: GID['+gma.GUID+']  '+gma.preferredName+'   '+gma.renId);
+        AD.log('<green>  - gma auth results: GID['+gma.GUID+']  '+gma.preferredName+'   '+gma.renId+' </green>');
 
         dfd.resolve(gma);
     });
@@ -392,7 +392,7 @@ var packageObjects = function(byID, list) {
             console.log('    - assignment '+assignment.nodeId+' has '+listMeasurements.length+' measurements ');
 
             //// NOTE: 0 measurements is a sign that the given assignment is inactive
-            ////       so do we remove that assignment from gmaData.assignments[assignmentID] ???
+            ////       ==> current decision is to remove that assignment from gmaData.assignments[assignmentID] 
 
             if (listMeasurements.length == 0) {
 
@@ -522,7 +522,7 @@ var storeAssignments = function(req, gma) {
  */
 var uploadDetermineReports = TestMap.uploadDetermineReports = function(req, done) {
 
-console.log('    . uploadDetermineReports()');
+    AD.log('    . uploadDetermineReports()');
     var upload = params(req,'upload');
     var stepsToDo = upload.stepsToDo;
 
@@ -540,6 +540,7 @@ console.log('    . uploadDetermineReports()');
     for (var m_id in stepsToDo){
         var entry = stepsToDo[m_id];
         var measurement = entry.obj;
+//AD.log('<yellow>measurement:</yellow>',measurement);
 
         // for date in entry.dates[]
         entry.dates.forEach(function(date){
@@ -549,8 +550,8 @@ console.log('    . uploadDetermineReports()');
             // get Report for date
             measurement.report.reportForDate(date)
             .fail(function(err){
-                console.log('*** error getting a report for date: '+date);
-                console.log(err);
+                AD.log.error('*** error getting a report for date: '+date);
+                AD.log.error(err);
                 done(err);
             })
             .then(function(report){
@@ -669,8 +670,8 @@ var uploadGatherSteps = TestMap.uploadGatherSteps = function(req, done) {
                                   // don't add to list
                                   // alert a developer to look into why!
 ////TODO: alert a developer
-console.log('*** Error: uploadGatherSteps():  a received transactionLog entry updating a step, did not match any of our DB.steps!');
-console.log(transaction);
+AD.log.error('*** Error: uploadGatherSteps():  a received transactionLog entry updating a step, did not match any of our DB.steps!');
+AD.log.error(transaction);
 
                               }
 
@@ -708,8 +709,8 @@ console.log(transaction);
                           var currMeasurement = hashMeasurements[step.measurement_id];
                           if (typeof currMeasurement == 'undefined') {
 
-                              console.log('   *** step uuid['+step.step_uuid+'] m_id['+step.measurement_id+'] did not match any of my measurements');
-                              console.log('       hashMeasurements keys['+Object.keys(hashMeasurements) + ']' );
+                              AD.log('   *** step uuid['+step.step_uuid+'] m_id['+step.measurement_id+'] did not match any of my measurements');
+                              AD.log('       hashMeasurements keys['+Object.keys(hashMeasurements) + ']' );
 
 
                           } else {
@@ -733,7 +734,7 @@ console.log(transaction);
     ], function(err, results) {
 //console.log('uploadGatherSteps(): final return:');
         if (err) {
-            console.log(err);
+            AD.log(err);
             done(err);
         } else {
             //// NOTE: results is an array of return values from all the fn() above
@@ -771,7 +772,7 @@ console.log(transaction);
  */
 var uploadSubmitReports = TestMap.uploadSubmitReports = function(req, done) {
 
-//console.log('uploadSubmitReports():');
+    AD.log('<green>.uploadSubmitReports():</green>');
 
     // get the reportsToSubmit from last step
     var upload = params(req, 'upload');
@@ -796,6 +797,9 @@ var uploadSubmitReports = TestMap.uploadSubmitReports = function(req, done) {
 
                               var report = reportsToSubmit[date][rID];
 
+// if (typeof report == 'undefined') {
+// AD.log('<red>!!! : report is undefined!</red>');
+// }
 
                               if (typeof listMeasurements[report.id()] == 'undefined') {
                                   listMeasurements[report.id()] = [];
@@ -806,11 +810,11 @@ var uploadSubmitReports = TestMap.uploadSubmitReports = function(req, done) {
 
                               report.measurements()
                               .fail(function(err){
-                                  console.log('*** error getting measurements from report!');
+                                  AD.log.error('*** error getting measurements from report!  id:'+report.id());
                                   next(err);
                               })
                               .then(function(measurements){
-
+// AD.log('<yellow> measurements:</yellow>', measurements);
                                   for(var strat in measurements) {
 
                                       // add all these measurements to our list[reportId]
@@ -845,6 +849,8 @@ var uploadSubmitReports = TestMap.uploadSubmitReports = function(req, done) {
                   // attach the steps associated with each measurement:
                   // { reportID:[{ obj:MObj, step:StepObj}, ... ] }
                   function(next) {
+// AD.log('<green>.listMeasurements() : </green>');
+// AD.log(listMeasurements);
 
                       var numToDo = 0;
                       var numDone = 0;
@@ -857,14 +863,51 @@ var uploadSubmitReports = TestMap.uploadSubmitReports = function(req, done) {
                                  next(err);
                              })
                              .then(function(step){
-                                 entry.step = step;
 
-                                 numDone++;
-                                 if (numDone >= numToDo) {
+// if (typeof step == 'undefined') {
+//     AD.log('<red>!!! : returned step is undefined!</red><yellow> entry.obj.id() : </yellow>', entry.obj.id());
+// //    AD.log(entry);
+// }
+                                if (step) {
+
+                                    entry.step = step;
+
+                                    numDone++;
+                                    if (numDone >= numToDo) {
+
 //console.log('2: listMeasurements: attaching steps:');
 //console.log(listMeasurements);
-                                     next();
-                                 }
+                                        next();
+                                    }
+
+                                } else {
+
+                                    //// NOTE: if we don't get a step back, then this is
+                                    ////       actually a new measurement that was added 
+                                    ////       sometime after our initial Campus/Steps were
+                                    ////       created initially ... joy
+                                    //// 
+                                    ////       so, we need to ADD this measurement to our system!
+                                    ////  
+
+//AD.log('<yellow><bold>unknown measurement:</bold>  adding it to our system. </yellow>');
+//AD.log('<red><bold>TODO:</bold> refactor server to actually add this!</red>');
+
+                                    // Actuall: current decision is to wait until this is a real life
+                                    // situation and then ask our customers how we should handle this.
+AD.log('<yellow><bold>unknown measurement:</bold>  id:'+ entry.obj.id() + ' </yellow>');
+
+
+                                    numDone++;
+                                    if (numDone >= numToDo) {
+
+                                        next();
+                                    }
+
+
+                                }
+
+
                              });
                           });
                       }
@@ -887,7 +930,7 @@ var uploadSubmitReports = TestMap.uploadSubmitReports = function(req, done) {
                       // lookup User by guid
                       NSServerUser.find({ user_guid:guid })
                       .fail(function(err){
-                          console.log('*** Error trying to lookup User with guid['+guid+']');
+                          AD.log.error('*** Error trying to lookup User with guid['+guid+']');
                           next(err);
                       })
                       .then(function(user){
@@ -896,7 +939,7 @@ var uploadSubmitReports = TestMap.uploadSubmitReports = function(req, done) {
 
                               // couldn't find user!?
                               var err = new Error('*** Error: couldn\'t find user for guid:'+guid);
-                              console.log(err);
+                              AD.log.error(err);
                               next(err);
 
                           } else {
@@ -905,7 +948,7 @@ var uploadSubmitReports = TestMap.uploadSubmitReports = function(req, done) {
                               // with USER, lookup all UserContacts using USER.user_uuid
                               NSServerUserContact.find({ user_uuid: user[0].user_uuid })
                               .fail(function(err){
-                                  console.log('*** Error trying to lookup UserContact with user_uuid:'+user.user_uuid);
+                                  AD.log.error('*** Error trying to lookup UserContact with user_uuid:'+user.user_uuid);
                                   next(err);
                               })
                               .then(function(contacts){
@@ -930,52 +973,93 @@ var uploadSubmitReports = TestMap.uploadSubmitReports = function(req, done) {
                   // of the Measurement's Report object.
                   // { reportID:[ {obj:MObj, step:SObj, contactSteps:[{obj}, {obj}...] }] }
                   function(next) {
+AD.log('<green> .ContactSteps that fall withing start & end dates:</green>');
 
                       var numToDo = 0;
                       var numDone = 0;
                       for (var rid in listMeasurements) {
+
                           listMeasurements[rid].forEach(function(entry){
-                             numToDo++;
-
-                             entry.contactSteps = [];
-
-                             // OK: GMA dates are in format 20140311
-                             //     step_date has format: 2014-03-11T05:00:00.000Z
-                             // so convert GMA -> step_date
-                             var report = entry.obj.report;
-                             var period = report.period();  // "2014-03-11 &ndash; 2014-03-15"
-                             var parts = period.split(' &ndash; ');
-
-                             var startDate = parts[0] + 'T00:00:00.000Z';
-                             var endDate = parts[1] + 'T23:59:59.000Z';
 
 
-                             // now lookup ContactSteps
-                             //     startDate <= step_date <= endDate
-                             //     step_uuid = current step.uuid
-                             //     contact_uuid IN listContacts
-                             //// NOTE: in the future when we have values that
-                             ////       are running totals, switch date check to:
-                             ////       step_date <= endDate
-                             NSServerContactStep.find()
-                             .where({step_date:{ ">=":startDate}})
-                             .where({step_date:{ "<=":endDate}})
-                             .where({step_uuid: entry.step.step_uuid })
-                             .where({contact_uuid:listContacts})
-                             .fail(function(err){
-                                 next(err);
-                             })
-                             .then(function(list){
+                            // NOTE: because we live in a fallen world, not everything
+                            //       works as expected, and it is possible to get here
+                            //       without a valid step!
+                            //
+                            //       only try to lookup contactSteps if we have a valid 
+                            //       step defined!
 
-                                 entry.contactSteps = list;
 
-                                 numDone++;
-                                 if (numDone >= numToDo) {
-// console.log('4: listMeasurements with contactSteps:');
-// console.log(listMeasurements);
-                                     next();
-                                 }
-                             });
+
+                                numToDo++;
+
+                                entry.contactSteps = [];
+
+                                // OK: GMA dates are in format 20140311
+                                //     step_date has format: 2014-03-11T05:00:00.000Z
+                                // so convert GMA -> step_date
+                                var report = entry.obj.report;
+if(typeof report == 'undefined') {
+    AD.log('<red> !!! entry.obj.report is undefined!!</red>');
+}
+                                var period = report.period();  // "2014-03-11 &ndash; 2014-03-15"
+                                var parts = period.split(' &ndash; ');
+
+                                var startDate = parts[0] + 'T00:00:00.000Z';
+                                var endDate = parts[1] + 'T23:59:59.000Z';
+
+
+// if (typeof entry.step == 'undefined') {
+//     AD.log('<red>!!! entry.step is undefined for entry:</red>', entry.data); 
+// } else {
+//     if (typeof entry.step.step_uuid == 'undefined') {
+//         AD.log('<red>!!! entry.step.step_uuid is undefined for entry:</red>', entry.data);
+//     }
+// }
+
+                                if ('undefined' != typeof entry.step) {
+
+
+                                    // now lookup ContactSteps
+                                    //     startDate <= step_date <= endDate
+                                    //     step_uuid = current step.uuid
+                                    //     contact_uuid IN listContacts
+                                    //// NOTE: in the future when we have values that
+                                    ////       are running totals, switch date check to:
+                                    ////       step_date <= endDate
+                                    NSServerContactStep.find()
+                                    .where({step_date:{ ">=":startDate}})
+                                    .where({step_date:{ "<=":endDate}})
+                                    .where({step_uuid: entry.step.step_uuid })
+                                    .where({contact_uuid:listContacts})
+                                    .fail(function(err){
+                                        next(err);
+                                    })
+                                    .then(function(list){
+
+                                        entry.contactSteps = list;
+
+                                        numDone++;
+                                        if (numDone >= numToDo) {
+                                            // console.log('4: listMeasurements with contactSteps:');
+                                            // console.log(listMeasurements);
+                                            next();
+                                        }
+                                    });
+
+
+                                } else {
+
+                                    // if we get here without a step, move along.
+                                    // the contactSteps should be [] which results in a 0 value submitted. 
+
+                                    numDone++;
+                                    if (numDone >= numToDo) {
+                                        next();
+                                    }
+                                }
+
+                            
                           });
                       }
 
@@ -991,9 +1075,9 @@ var uploadSubmitReports = TestMap.uploadSubmitReports = function(req, done) {
                   // Now have the measurement submit it's new values
                   // { reportID:[ {obj:MObj, step:SObj, contactSteps:[{obj}, {obj}...] }] }
                   function(next) {
-console.log('5: trying to submit data now():')
-console.log('listMeasurements:');
-console.log(listMeasurements);
+AD.log('5: trying to submit data now():')
+AD.log('listMeasurements:');
+AD.log(listMeasurements);
 
 
                       var numToDo = 0;
@@ -1009,7 +1093,7 @@ console.log(listMeasurements);
                               // pull the report from the Measurement object
                               if (report == null) report = entry.obj.getReport();
 
-console.log('   - updating measurement # '+entry.obj.id()+' value:'+ (entry.contactSteps.length));
+AD.log('   - updating measurement # '+entry.obj.id()+' value:'+ (entry.contactSteps.length));
                               entry.obj.value( entry.contactSteps.length );
 
                           });
@@ -1026,7 +1110,7 @@ console.log('   - updating measurement # '+entry.obj.id()+' value:'+ (entry.cont
 
                                  numDone++;
                                   if (numDone >= numToDo) {
-console.log('   - saving complete!');
+AD.log('   - saving complete!');
                                       next();
                                   }
                               });
@@ -1035,7 +1119,7 @@ console.log('   - saving complete!');
 
                       // if there was nothing to do, just continue on
                       if (numToDo == 0) {
-console.log('   - saving ... nothing to do.');
+AD.log('   - saving ... nothing to do.');
 
                           // there was nothing to do.
                           next();
