@@ -1,6 +1,6 @@
 {
   "name": "nextsteps-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The server side syncing capabilities for the NextSteps mobile app.",
   "main": "module.js",
   "directories": {
