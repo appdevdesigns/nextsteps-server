@@ -144,19 +144,19 @@ var testClientData = {
 
 module.exports = function(req, res, next) {
 
-    console.log();
-    console.log();
-    console.log('--------------------------------------------------');
-    console.log('validate user ... ');
+    AD.log();
+    AD.log();
+    AD.log('--------------------------------------------------');
+    AD.log('validate user ... ');
     req.appdev = {};
-    console.log();
-    console.log('from ip addr: '+req.connection.remoteAddress);
-    console.log();
-    console.log('provided params:');
-    console.log(req.body);
-    console.log(req.query);
-    console.log(req.data);
-    console.log();
+    AD.log();
+    AD.log('from ip addr: '+req.connection.remoteAddress);
+    AD.log();
+    AD.log('provided params:');
+    AD.log('...<green>body:</green>', req.body);
+    AD.log('...<green>query:</green>', req.query);
+    AD.log('...<green>data:</green>', req.data);
+    AD.log();
 
 
     // Assign userLang from session information
@@ -179,41 +179,20 @@ module.exports = function(req, res, next) {
     }
 */
 
-//    var uuid = null;
-    NSServerUser.findOne({user_guid:userGuid})
-    .fail(function(err){
-        // exit policy chain w/o calling next();
-        ADCore.comm.error(res, err);
-    })
-    .then(function(userObj){
+    if (userGuid != null) {
 
-        if (userObj) {
 
-            var text = '  - Found existing user, uuid = ' + userObj.user_uuid + '  guid='+userObj.user_guid;
-            endValidation({
-                    logMsg:text,
-                    req:req,
-                    userObj:userObj,
-                    res:res
-                },
-                next
-            );
+    //    var uuid = null;
+        NSServerUser.findOne({user_guid:userGuid})
+        .fail(function(err){
+            // exit policy chain w/o calling next();
+            ADCore.comm.error(res, err);
+        })
+        .done(function(userObj){
 
-        }
+            if (userObj) {
 
-        else { // User doesn't exist in model, create new user
-            console.log('  - CREATING new user for guid = ' + userGuid);
-            var newUUID = AD.util.uuid();
-            NSServerUser.create({user_uuid:newUUID, user_guid:userGuid, default_lang:userLang})
-            .fail(function(err){
-                // exit policy chain w/o calling next();
-                var newErr = new Error('Failed to create user during sync');
-                newErr.systemErr = err;
-                ADCore.comm.error(res, newErr);
-            })
-            .then(function(userObj){
-
-                var text = '    Created new user record for GUID = ' + userGuid;
+                var text = '<green><bold>  - Found</bold></green> existing user, uuid = ' + userObj.user_uuid + '  guid='+userObj.user_guid;
                 endValidation({
                         logMsg:text,
                         req:req,
@@ -222,12 +201,47 @@ module.exports = function(req, res, next) {
                     },
                     next
                 );
-                
-            });
-        } // else
+
+            } else { // User doesn't exist in model, create new user
+                AD.log('<green><bold>  - CREATING </bold></green>new user for guid = ' + userGuid);
+                var newUUID = AD.util.uuid();
+                NSServerUser.create({user_uuid:newUUID, user_guid:userGuid, default_lang:userLang})
+                .fail(function(err){
+                    // exit policy chain w/o calling next();
+                    var newErr = new Error('Failed to create user during sync');
+                    newErr.systemErr = err;
+                    ADCore.comm.error(res, newErr);
+                })
+                .done(function(userObj){
+
+                    var text = '    Created new user record for GUID = ' + userGuid;
+                    endValidation({
+                            logMsg:text,
+                            req:req,
+                            userObj:userObj,
+                            res:res
+                        },
+                        next
+                    );
+                    
+                });
+            } // else
 
 
-    }); // .done()
+        }); // .done()
+
+    } else {
+
+        AD.log('... user GUID == null!');
+        AD.log('... <red><bold>ending:</bold></red> this isn\'t right. sending back an error.');
+
+        // just to be sure, let's mark this entry un authenticated:
+        ADCore.auth.markNotAuthenticated(req);
+        
+        var err = new Error('invalid user GUID [null]');
+        // next(err);
+        ADCore.comm.error(res, err);
+    }
 };
 
 
@@ -238,7 +252,7 @@ var endValidation = function(options, next) {
     var res = options.res;
     var userObj = options.userObj;
 
-    console.log(logMsg);
+    AD.log(logMsg);
     req.appdev.userUUID = userObj.user_uuid;
     req.appdev.userLang = userObj.default_lang;
 
@@ -260,7 +274,7 @@ var endValidation = function(options, next) {
 
     } else {
         var err = new Error('*** Error: NSServerValidateUser: unknown configured system ['+sails.config.nsserver.externalSystem+']');
-        console.log(err);
+        AD.log.error(err);
         next(err);
     }
 
