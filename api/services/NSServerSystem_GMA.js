@@ -1076,8 +1076,8 @@ if(typeof report == 'undefined') {
                   // { reportID:[ {obj:MObj, step:SObj, contactSteps:[{obj}, {obj}...] }] }
                   function(next) {
 AD.log('5: trying to submit data now():')
-AD.log('listMeasurements:');
-AD.log(listMeasurements);
+//AD.log('listMeasurements:');
+//AD.log(listMeasurements);
 
 
                       var numToDo = 0;

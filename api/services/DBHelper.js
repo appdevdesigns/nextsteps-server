@@ -1327,6 +1327,8 @@ var paramsMultilingualTrans = function(model, params, ignore) {
 
     if (typeof params == 'undefined') {
         AD.log('<yellow><bold>warn:</bold> paramsMultilingualTrans() called with no params');
+        var err = new Error('bad params');
+        AD.log(err.stack);
         return transParms;
     }
 
