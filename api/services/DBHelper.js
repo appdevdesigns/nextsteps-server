@@ -154,9 +154,11 @@ module.exports = {
                     if (cb) cb(null, listCampuses);
                     dfd.resolve(listCampuses);
 
-                });
+                })
+                .done();
             }
-        });
+        })
+        .done();
 
         return dfd;
     },
@@ -311,7 +313,8 @@ module.exports = {
                 })
                 .fail(function(err){
                     next(err);
-                });
+                })
+                .done();
             }
 
         ], function(err, results) {
