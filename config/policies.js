@@ -11,21 +11,22 @@
  * http://sailsjs.org/#documentation
  */
 
-module.exports = {
+var serviceStack = ADCore.policy.serviceStack();
+var nsServerStack =  ADCore.policy.serviceStack([ 
+    'NSServerDevelopTools',
+    'NSServerValidateUser',
+    'NSServerDownloadFromMothership',
+    'NSServerPrepareOutgoingData',
+    'NSServerProcessClientData',
+    'NSServerUploadToMothership' 
+]);
 
+module.exports = {
 
     'nextsteps-server/NSServerController': {
         ping: [],
-        auth: ['sessionAuth'],
-        sync: ['sessionAuth',  
-               'initUser',
-               'NSServerDevelopTools',
-               'NSServerValidateUser',
-               'NSServerDownloadFromMothership',
-               'NSServerPrepareOutgoingData',
-               'NSServerProcessClientData',
-               'NSServerUploadToMothership'
-               ],
+        auth: serviceStack,
+        sync: nsServerStack,
         logout:true
     }
 
